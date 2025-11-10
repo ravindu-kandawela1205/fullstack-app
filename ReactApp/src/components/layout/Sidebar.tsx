@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Users, UserCog } from "lucide-react";
+import { LayoutDashboard, Users, UserCog, ChevronRight } from "lucide-react";
 import { ROUTES } from "@/constants/routes.constant";
+import { cn } from "@/lib/utils";
 
 const menuItems = [
   { path: ROUTES.DASHBOARD, label: "Dashboard", icon: LayoutDashboard },
@@ -10,28 +11,41 @@ const menuItems = [
 
 export default function Sidebar() {
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-gray-900 text-white flex flex-col">
-      <div className="p-6 border-b border-gray-800">
-        <h1 className="text-xl font-bold">Admin Panel</h1>
+    <div className="fixed left-0 top-0 h-screen w-64 border-r bg-sidebar text-sidebar-foreground flex flex-col">
+      <div className="flex h-16 items-center border-b px-6">
+        <h1 className="text-lg font-semibold">Admin Panel</h1>
       </div>
-      <nav className="flex-1 p-4">
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-colors ${
-                isActive
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-300 hover:bg-gray-800 hover:text-white"
-              }`
-            }
-          >
-            <item.icon className="h-5 w-5" />
-            <span>{item.label}</span>
-          </NavLink>
-        ))}
+      <nav className="flex-1 overflow-auto p-4">
+        <div className="space-y-2">
+          {menuItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                )
+              }
+            >
+              <item.icon className="h-4 w-4" />
+              <span className="flex-1">{item.label}</span>
+              <ChevronRight className="h-4 w-4 opacity-50" />
+            </NavLink>
+          ))}
+        </div>
       </nav>
-    </aside>
+      <div className="border-t p-4">
+        <div className="flex items-center gap-3 rounded-md px-3 py-2">
+          <div className="h-8 w-8 rounded-full bg-sidebar-primary" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">Admin User</p>
+            <p className="text-xs text-sidebar-foreground/70">admin@example.com</p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

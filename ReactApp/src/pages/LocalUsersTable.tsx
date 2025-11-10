@@ -153,32 +153,36 @@ export default function LocalUsersPage() {
   ];
 
   const handleSubmit = async (data: any) => {
-    if (editingUser) {
-      await updateUser(editingUser._id!, {
-        firstname: data.firstName,
-        lastname: data.lastName,
-        age: data.age,
-        gender: data.gender,
-        email: data.email,
-        birthdate: new Date(data.birthday).toISOString(),
-      });
-      toast.success("User updated successfully!");
-      setEditingUser(null);
-    } else {
-      await addUser({
-        firstname: data.firstName,
-        lastname: data.lastName,
-        age: data.age,
-        gender: data.gender,
-        email: data.email,
-        birthdate: new Date(data.birthday).toISOString(),
-      });
-      const newTotal = total + 1;
-      const newPageCount = Math.max(1, Math.ceil(newTotal / pageSize));
-      setPage(newPageCount);
-      toast.success("User added successfully!");
+    try {
+      if (editingUser) {
+        const message = await updateUser(editingUser._id!, {
+          firstname: data.firstName,
+          lastname: data.lastName,
+          age: data.age,
+          gender: data.gender,
+          email: data.email,
+          birthdate: new Date(data.birthday).toISOString(),
+        });
+        toast.success(message);
+        setEditingUser(null);
+      } else {
+        const message = await addUser({
+          firstname: data.firstName,
+          lastname: data.lastName,
+          age: data.age,
+          gender: data.gender,
+          email: data.email,
+          birthdate: new Date(data.birthday).toISOString(),
+        });
+        const newTotal = total + 1;
+        const newPageCount = Math.max(1, Math.ceil(newTotal / pageSize));
+        setPage(newPageCount);
+        toast.success(message);
+      }
+      setOpen(false);
+    } catch (error) {
+      toast.error("Operation failed!");
     }
-    setOpen(false);
   };
 
   const openEdit = (user: User) => {
@@ -199,21 +203,25 @@ export default function LocalUsersPage() {
   const confirmDelete = async () => {
     if (!deletingUser) return;
 
-    await removeUser(deletingUser._id!);
-    toast.success("User deleted successfully!");
+    try {
+      const message = await removeUser(deletingUser._id!);
+      toast.success(message);
 
-    const newTotal = total - 1;
-    const newPageCount = Math.max(1, Math.ceil(Math.max(0, newTotal) / pageSize));
-    if (page > newPageCount) setPage(newPageCount);
+      const newTotal = total - 1;
+      const newPageCount = Math.max(1, Math.ceil(Math.max(0, newTotal) / pageSize));
+      if (page > newPageCount) setPage(newPageCount);
 
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      next.delete(deletingUser._id!);
-      return next;
-    });
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(deletingUser._id!);
+        return next;
+      });
 
-    setDeleteOpen(false);
-    setDeletingUser(null);
+      setDeleteOpen(false);
+      setDeletingUser(null);
+    } catch (error) {
+      toast.error("Failed to delete user!");
+    }
   };
 
   return (
@@ -231,7 +239,7 @@ export default function LocalUsersPage() {
 
       {open && (
         <UserFormDialog
-          key={editingUser?.id || Date.now()}
+          key={editingUser?._id || Date.now()}
           open={open}
           onOpenChange={(o) => {
             setOpen(o);
@@ -256,7 +264,7 @@ export default function LocalUsersPage() {
         }}
         searchPlaceholder="Search by name, email, or phone..."
         selectedIds={selectedIds}
-        setSelectedIds={setSelectedIds}
+        setSelectedIds={setSelectedIds as any}
         onPageChange={setPage}
         onPageSizeChange={(n) => { setPageSize(n); setPage(1); }}
         onRowAction={openRemove as any}
