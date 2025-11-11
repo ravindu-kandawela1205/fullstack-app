@@ -1,6 +1,8 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import authRoutes from "./route/auth.routes.js";
 import cors from 'cors';
 import usersRouter from "./route/users.js";
 const app=express();
@@ -12,6 +14,19 @@ const MONGO_URL=process.env.MONGO_URL;
 app.use(cors());
 app.use(express.json());
 app.use("/api/users", usersRouter);
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL, // e.g., http://localhost:5173 (Vite)
+    credentials: true,              // allow cookies
+  })
+);
+
+// routes
+app.use("/api/auth", authRoutes);
+
+// health check
+app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
 mongoose.connect(MONGO_URL).then(()=>{
     console.log("Connected to MongoDB");
