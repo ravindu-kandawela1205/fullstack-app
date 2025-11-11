@@ -29,7 +29,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-sm w-full space-y-6 p-6 bg-white rounded-lg shadow-md">
+      <div className="w-100 space-y-3 p-3 bg-white rounded-lg shadow-md">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900">Sign in</h2>
           <p className="mt-2 text-gray-600">Welcome back to your account</p>

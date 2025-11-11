@@ -44,7 +44,7 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-sm w-full space-y-6 p-6 bg-white rounded-lg shadow-md">
+      <div className="w-120 space-y-3 p-3 bg-white rounded-lg shadow-md">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900">Sign up</h2>
           <p className="mt-2 text-gray-600">Create your new account</p>

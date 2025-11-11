@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import { LayoutDashboard, Users, UserCog, ChevronRight } from "lucide-react";
 import { ROUTES } from "@/constants/routes.constant";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/store/authStore";
 
 const menuItems = [
   { path: ROUTES.DASHBOARD, label: "Dashboard", icon: LayoutDashboard },
@@ -10,6 +11,8 @@ const menuItems = [
 ];
 
 export default function Sidebar() {
+  const { user } = useAuth();
+  
   return (
     <div className="fixed left-0 top-0 h-screen w-64 border-r bg-sidebar text-sidebar-foreground flex flex-col">
       <div className="flex h-16 items-center border-b px-6">
@@ -39,10 +42,12 @@ export default function Sidebar() {
       </nav>
       <div className="border-t p-4">
         <div className="flex items-center gap-3 rounded-md px-3 py-2">
-          <div className="h-8 w-8 rounded-full bg-sidebar-primary" />
+          <div className="h-8 w-8 rounded-full bg-sidebar-primary flex items-center justify-center text-white text-sm font-medium">
+            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+          </div>
           <div className="flex-1">
-            <p className="text-sm font-medium">Admin User</p>
-            <p className="text-xs text-sidebar-foreground/70">admin@example.com</p>
+            <p className="text-sm font-medium">{user?.name || 'User'}</p>
+            <p className="text-xs text-sidebar-foreground/70">{user?.email || 'user@example.com'}</p>
           </div>
         </div>
       </div>

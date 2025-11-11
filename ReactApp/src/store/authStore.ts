@@ -19,23 +19,26 @@ type User = { id: string; name: string; email: string } | null;
 type AuthState = {
   user: User;
   loading: boolean;
+  initialized: boolean;
   register: (name: string, email: string, password: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  checkAuth: () => Promise<void>;
 };
 
 export const useAuth = create<AuthState>((set) => ({
   user: null,
   loading: false,
+  initialized: false,
 
   register: async (name, email, password) => {
     set({ loading: true });
     try {
-      const res = await request<{ user: { id: string; name: string; email: string } }>(
+      await request(
         "/api/auth/register",
         { method: "POST", body: JSON.stringify({ name, email, password }) }
       );
-      set({ user: res.user, loading: false });
+      set({ loading: false });
     } catch (e: any) {
       set({ loading: false });
       throw e;
@@ -62,6 +65,15 @@ export const useAuth = create<AuthState>((set) => ({
       set({ user: null });
     } catch (e) {
       set({ user: null }); // Clear user even if request fails
+    }
+  },
+
+  checkAuth: async () => {
+    try {
+      const res = await request<{ user: { id: string; name: string; email: string } }>("/api/auth/me");
+      set({ user: res.user, initialized: true });
+    } catch (e) {
+      set({ user: null, initialized: true });
     }
   },
 }));
