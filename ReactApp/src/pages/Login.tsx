@@ -1,8 +1,9 @@
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useAuth } from "../store/authStore";
 
 
 type LoginForm = {
@@ -11,10 +12,19 @@ type LoginForm = {
 };
 
 export default function Login() {
-  const form = useForm<LoginForm>();
+  const nav = useNavigate();
+  const { login, loading } = useAuth();
+  const form = useForm<LoginForm>({
+    defaultValues: { email: "", password: "" }
+  });
 
-  const onSubmit = (data: LoginForm) => {
-    console.log(data);
+  const onSubmit = async (data: LoginForm) => {
+    try {
+      await login(data.email, data.password);
+      nav("/"); // go to dashboard after successful login
+    } catch (err: any) {
+      form.setError("root", { message: err?.message || "Login failed" });
+    }
   };
 
   return (
@@ -27,6 +37,12 @@ export default function Login() {
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {form.formState.errors.root?.message && (
+              <div className="text-sm text-red-600 border border-red-200 bg-red-50 rounded px-3 py-2">
+                {form.formState.errors.root.message}
+              </div>
+            )}
+            
             <FormField
               control={form.control}
               name="email"
@@ -34,7 +50,7 @@ export default function Login() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="Enter your email" {...field} />
+                    <Input type="email" placeholder="Enter your email" disabled={loading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -48,15 +64,15 @@ export default function Login() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Enter your password" {...field} />
+                    <Input type="password" placeholder="Enter your password" disabled={loading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             
-            <Button type="submit" className="w-full">
-              Sign in
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
         </Form>

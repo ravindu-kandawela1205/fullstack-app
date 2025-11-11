@@ -19,39 +19,53 @@ function setAuthCookie(res, token) {
 
 export async function register(req, res) {
   try {
+    console.log("Registration attempt:", req.body);
     const parsed = registerSchema.parse(req.body);
 
     const existing = await User.findOne({ email: parsed.email });
     if (existing) return res.status(409).json({ message: "Email already registered" });
 
     const passwordHash = await bcrypt.hash(parsed.password, 10);
+    console.log("Creating user with data:", { name: parsed.name, email: parsed.email });
+    
     const user = await User.create({ name: parsed.name, email: parsed.email, passwordHash });
+    console.log("User created successfully:", user._id);
 
     const token = signToken({ sub: user._id, email: user.email });
     setAuthCookie(res, token);
 
     res.status(201).json({
       user: { id: user._id, name: user.name, email: user.email },
-      token, // if you prefer cookie-only, you can omit this
+      token,
     });
   } catch (err) {
     if (err.name === "ZodError") {
       return res.status(400).json({ message: "Invalid input", issues: err.issues });
     }
-    console.error(err);
+    console.error("Registration error:", err);
     res.status(500).json({ message: "Server error" });
   }
 }
 
 export async function login(req, res) {
   try {
+    console.log("Login attempt:", req.body.email);
     const parsed = loginSchema.parse(req.body);
+    
     const user = await User.findOne({ email: parsed.email });
-    if (!user) return res.status(401).json({ message: "Invalid credentials" });
-
+    if (!user) {
+      console.log("User not found:", parsed.email);
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+    
+    console.log("User found:", user.email);
     const ok = await bcrypt.compare(parsed.password, user.passwordHash);
-    if (!ok) return res.status(401).json({ message: "Invalid credentials" });
+    if (!ok) {
+      console.log("Password mismatch for:", parsed.email);
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
+    console.log("Login successful for:", user.email);
     const token = signToken({ sub: user._id, email: user.email });
     setAuthCookie(res, token);
 
@@ -63,7 +77,7 @@ export async function login(req, res) {
     if (err.name === "ZodError") {
       return res.status(400).json({ message: "Invalid input", issues: err.issues });
     }
-    console.error(err);
+    console.error("Login error:", err);
     res.status(500).json({ message: "Server error" });
   }
 }

@@ -35,7 +35,7 @@ export default function Register() {
   const onSubmit = async (data: RegisterForm) => {
     try {
       await registerUser(data.name, data.email, data.password);
-      nav("/"); // go to home/dashboard after successful register
+      nav("/login"); // go to login after successful register
     } catch (err: any) {
       // Show backend error at top of form (and keep field errors if any)
       form.setError("root", { message: err?.message || "Registration failed" });

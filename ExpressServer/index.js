@@ -8,19 +8,16 @@ import usersRouter from "./route/users.js";
 const app=express();
 dotenv.config();
 
-const PORT=process.env.PORT || 7000;
+const PORT=process.env.PORT || 8000;
 const MONGO_URL=process.env.MONGO_URL;
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_URL,
+  credentials: true
+}));
 app.use(express.json());
-app.use("/api/users", usersRouter);
 app.use(cookieParser());
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL, // e.g., http://localhost:5173 (Vite)
-    credentials: true,              // allow cookies
-  })
-);
+app.use("/api/users", usersRouter);
 
 // routes
 app.use("/api/auth", authRoutes);
@@ -29,12 +26,15 @@ app.use("/api/auth", authRoutes);
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
 mongoose.connect(MONGO_URL).then(()=>{
-    console.log("Connected to MongoDB");
+    console.log("Connected to MongoDB:", MONGO_URL);
+    console.log("Available collections will be: autousers, products");
     app.listen(PORT,()=>{
         console.log(`Server is running on port ${PORT}`);
+        console.log(`Health check: http://localhost:${PORT}/api/health`);
+        console.log(`Register endpoint: http://localhost:${PORT}/api/auth/register`);
     });
 }).catch((err)=>{
-    console.log(err);
+    console.error("MongoDB connection error:", err);
 })
 
 const productSchema=new mongoose.Schema({
