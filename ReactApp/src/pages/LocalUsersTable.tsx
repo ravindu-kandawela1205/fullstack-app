@@ -180,8 +180,9 @@ export default function LocalUsersPage() {
         toast.success(message);
       }
       setOpen(false);
-    } catch (error) {
-      toast.error("Operation failed!");
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || error.message || "Operation failed!";
+      toast.error(errorMessage);
     }
   };
 
@@ -219,8 +220,9 @@ export default function LocalUsersPage() {
 
       setDeleteOpen(false);
       setDeletingUser(null);
-    } catch (error) {
-      toast.error("Failed to delete user!");
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || error.message || "Failed to delete user!";
+      toast.error(errorMessage);
     }
   };
 

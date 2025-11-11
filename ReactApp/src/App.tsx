@@ -3,6 +3,7 @@ import AdminLayout from '@/components/layout/AdminLayout';
 import Dashboard from '@/pages/Dashboard';
 import ProductsTable from '@/pages/ProductsTable';
 import LocalUsersTable from '@/pages/LocalUsersTable';
+import NotFound from '@/pages/NotFound';
 import { ROUTES } from '@/constants/routes.constant';
 
 function App() {
@@ -13,7 +14,7 @@ function App() {
           <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
           <Route path={ROUTES.USERS_LIST} element={<ProductsTable />} />
           <Route path={ROUTES.LOCAL_USERS} element={<LocalUsersTable />} />
-
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </AdminLayout>
     </BrowserRouter>
