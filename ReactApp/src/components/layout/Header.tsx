@@ -9,11 +9,14 @@ import {
 import { useAuth } from "@/store/authStore";
 import { useTheme } from "@/store/themeStore";
 import { useNavigate } from "react-router-dom";
+import ProfileDialog from "@/components/ProfileDialog";
+import { useState } from "react";
 
 export default function Header() {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -38,7 +41,7 @@ export default function Header() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => navigate('/profile')}>
+            <DropdownMenuItem onClick={() => setProfileOpen(true)}>
               <User className="mr-2 h-4 w-4" />
               Profile
             </DropdownMenuItem>
@@ -49,6 +52,8 @@ export default function Header() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      
+      <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
     </header>
   );
 }

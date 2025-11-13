@@ -60,14 +60,6 @@ export default function Profile() {
         throw new Error(error.message);
       }
       
-      const result = await response.json();
-      
-      // If logout flag is set, redirect to login
-      if (result.logout) {
-        window.location.href = '/login';
-        return;
-      }
-      
       passwordForm.reset();
       setIsChangingPassword(false);
     } catch (err: any) {

@@ -14,7 +14,7 @@ async function request<T>(path: string, options: RequestInit = {}) {
   return data as T;
 }
 
-type User = { id: string; name: string; email: string } | null;
+type User = { id: string; name: string; email: string; profileImage?: string } | null;
 
 type AuthState = {
   user: User;
@@ -24,7 +24,7 @@ type AuthState = {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
-  updateProfile: (name: string) => Promise<void>;
+  updateProfile: (name: string, profileImage?: string) => Promise<void>;
 };
 
 export const useAuth = create<AuthState>((set) => ({
@@ -78,11 +78,15 @@ export const useAuth = create<AuthState>((set) => ({
     }
   },
 
-  updateProfile: async (name) => {
+  updateProfile: async (name, profileImage) => {
     try {
-      const res = await request<{ user: { id: string; name: string; email: string } }>(
+      const body: any = { name };
+      if (profileImage !== undefined) {
+        body.profileImage = profileImage;
+      }
+      const res = await request<{ user: { id: string; name: string; email: string; profileImage?: string } }>(
         "/api/auth/profile",
-        { method: "PUT", body: JSON.stringify({ name }) }
+        { method: "PUT", body: JSON.stringify(body) }
       );
       set({ user: res.user });
     } catch (e: any) {

@@ -35,7 +35,7 @@ export async function register(req, res) {
     setAuthCookie(res, token);
 
     res.status(201).json({
-      user: { id: user._id, name: user.name, email: user.email },
+      user: { id: user._id, name: user.name, email: user.email, profileImage: user.profileImage },
       token,
     });
   } catch (err) {
@@ -70,7 +70,7 @@ export async function login(req, res) {
     setAuthCookie(res, token);
 
     res.json({
-      user: { id: user._id, name: user.name, email: user.email },
+      user: { id: user._id, name: user.name, email: user.email, profileImage: user.profileImage },
       token,
     });
   } catch (err) {
@@ -83,27 +83,57 @@ export async function login(req, res) {
 }
 
 export async function me(req, res) {
-  // req.user is set by auth middleware
-  res.json({ user: req.user });
+  try {
+    const user = await User.findById(req.user.id).select('-passwordHash');
+    res.json({ 
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email,
+        profileImage: user.profileImage
+      }
+    });
+  } catch (err) {
+    console.error("Get user error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
 }
 
 export async function updateProfile(req, res) {
   try {
-    const { name } = req.body;
+    const { name, profileImage } = req.body;
     const userId = req.user.id;
+
+    console.log('Update profile request:', { userId, name, imageSize: profileImage ? profileImage.length : 0 });
+
+    const updateData = { name };
+    if (profileImage !== undefined) {
+      updateData.profileImage = profileImage;
+    }
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { name },
+      updateData,
       { new: true, select: '-passwordHash' }
     );
 
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log('Profile updated successfully for user:', updatedUser.email);
+
     res.json({
-      user: { id: updatedUser._id, name: updatedUser.name, email: updatedUser.email }
+      user: { 
+        id: updatedUser._id, 
+        name: updatedUser.name, 
+        email: updatedUser.email,
+        profileImage: updatedUser.profileImage
+      }
     });
   } catch (err) {
     console.error("Update profile error:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error: " + err.message });
   }
 }
 
@@ -142,13 +172,13 @@ export async function changePassword(req, res) {
     
     console.log("Password updated successfully for user:", user.email);
 
-    // Clear auth cookie to logout user
-    const isProd = process.env.NODE_ENV === "production";
-    res.clearCookie("token", { httpOnly: true, secure: isProd, sameSite: isProd ? "none" : "lax" });
+    // Generate new token to keep user logged in
+    const newToken = signToken({ sub: user._id, email: user.email });
+    setAuthCookie(res, newToken);
 
     res.json({ 
-      message: "Password updated successfully. Please login again.",
-      logout: true
+      message: "Password updated successfully",
+      token: newToken
     });
   } catch (err) {
     console.error("Change password error:", err);

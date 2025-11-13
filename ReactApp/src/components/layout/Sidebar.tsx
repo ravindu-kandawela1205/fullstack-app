@@ -42,8 +42,16 @@ export default function Sidebar() {
       </nav>
       <div className="border-t border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-center gap-3 rounded-md px-3 py-2">
-          <div className="h-8 w-8 rounded-full bg-blue-600 dark:bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
-            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+          <div className="h-12 w-12 rounded-full bg-black dark:bg-blue-500 flex items-center justify-center text-white text-sm font-medium overflow-hidden">
+            {user?.profileImage ? (
+              <img 
+                src={user.profileImage} 
+                alt="Profile" 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              user?.name?.charAt(0)?.toUpperCase() || 'U'
+            )}
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user?.name || 'User'}</p>

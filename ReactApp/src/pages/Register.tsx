@@ -43,18 +43,18 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-120 space-y-3 p-3 bg-white rounded-lg shadow-md">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+      <div className="w-120 space-y-3 p-3 bg-white dark:bg-gray-900 rounded-lg shadow-md border border-gray-200 dark:border-gray-800">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Sign up</h2>
-          <p className="mt-2 text-gray-600">Create your new account</p>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Sign up</h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">Create your new account</p>
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Top-level error (server) */}
             {form.formState.errors.root?.message && (
-              <div className="text-sm text-red-600 border border-red-200 bg-red-50 rounded px-3 py-2">
+              <div className="text-sm text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 rounded px-3 py-2">
                 {form.formState.errors.root.message}
               </div>
             )}
@@ -122,9 +122,9 @@ export default function Register() {
         </Form>
 
         <div className="text-center">
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Already have an account?{" "}
-            <Link to="/login" className="text-blue-600 hover:text-blue-500">
+            <Link to="/login" className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">
               Sign in
             </Link>
           </p>
