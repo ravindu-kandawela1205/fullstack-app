@@ -14,9 +14,9 @@ export default function Sidebar() {
   const { user } = useAuth();
   
   return (
-    <div className="fixed left-0 top-0 h-screen w-64 border-r bg-sidebar text-sidebar-foreground flex flex-col">
-      <div className="flex h-16 items-center border-b px-6">
-        <h1 className="text-lg font-semibold">Admin Panel</h1>
+    <div className="fixed left-0 top-0 h-screen w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col">
+      <div className="flex h-16 items-center border-b border-gray-200 dark:border-gray-700 px-6">
+        <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Admin Panel</h1>
       </div>
       <nav className="flex-1 overflow-auto p-4">
         <div className="space-y-2">
@@ -28,8 +28,8 @@ export default function Sidebar() {
                 cn(
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
                 )
               }
             >
@@ -40,14 +40,14 @@ export default function Sidebar() {
           ))}
         </div>
       </nav>
-      <div className="border-t p-4">
+      <div className="border-t border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-center gap-3 rounded-md px-3 py-2">
-          <div className="h-8 w-8 rounded-full bg-sidebar-primary flex items-center justify-center text-white text-sm font-medium">
+          <div className="h-8 w-8 rounded-full bg-blue-600 dark:bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
             {user?.name?.charAt(0)?.toUpperCase() || 'U'}
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium">{user?.name || 'User'}</p>
-            <p className="text-xs text-sidebar-foreground/70">{user?.email || 'user@example.com'}</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user?.name || 'User'}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">{user?.email || 'user@example.com'}</p>
           </div>
         </div>
       </div>

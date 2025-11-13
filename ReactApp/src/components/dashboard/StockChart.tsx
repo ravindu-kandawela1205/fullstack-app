@@ -15,10 +15,10 @@ export default function StockChart() {
   })) || [];
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex flex-col space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Product Stock Levels</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Product Stock Levels</h3>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setActiveChart("stock")}
@@ -31,7 +31,7 @@ export default function StockChart() {
           </div>
         </div>
         
-        <ChartContainer>
+        <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -78,7 +78,7 @@ export default function StockChart() {
               />
             </LineChart>
           </ResponsiveContainer>
-        </ChartContainer>
+        </div>
       </div>
     </div>
   );

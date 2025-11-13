@@ -9,8 +9,16 @@ import Register from '@/pages/Register';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PublicRoute from '@/components/PublicRoute';
 import { ROUTES } from '@/constants/routes.constant';
+import { useTheme } from '@/store/themeStore';
+import { useEffect } from 'react';
 
 function App() {
+  const { theme } = useTheme();
+  
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [theme]);
+  
   return (
     <BrowserRouter>
       <Routes>

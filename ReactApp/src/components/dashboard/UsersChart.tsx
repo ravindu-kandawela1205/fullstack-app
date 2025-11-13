@@ -23,9 +23,9 @@ export default function UsersChart() {
   })).slice(0, 6);
 
   return (
-    <div className="bg-white rounded-lg border p-6">
-      <h3 className="text-lg font-semibold mb-4">Product Categories Stock</h3>
-      <ChartContainer>
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Product Categories Stock</h3>
+      <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart data={chartData}>
             <PolarGrid />
@@ -40,7 +40,7 @@ export default function UsersChart() {
             />
           </RadarChart>
         </ResponsiveContainer>
-      </ChartContainer>
+      </div>
     </div>
   );
 }

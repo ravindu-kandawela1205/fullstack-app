@@ -1,4 +1,4 @@
-import { Bell, User, LogOut } from "lucide-react";
+import { Bell, User, LogOut, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,10 +7,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/store/authStore";
+import { useTheme } from "@/store/themeStore";
 import { useNavigate } from "react-router-dom";
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -19,9 +21,12 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-64 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-10">
-      <h2 className="text-lg font-semibold text-gray-800">Welcome to Admin Panel</h2>
+    <header className="fixed top-0 left-64 right-0 h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 z-10">
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Welcome to Admin Panel</h2>
       <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" onClick={toggleTheme}>
+          {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+        </Button>
         <Button variant="ghost" size="icon">
           <Bell className="h-5 w-5" />
         </Button>
