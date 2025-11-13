@@ -5,31 +5,139 @@
 ### 1. Registration Flow
 **Frontend → Backend → Database**
 
-1. User fills form in `ReactApp/src/pages/Register.tsx`
-2. Form calls `register()` from `ReactApp/src/store/authStore.ts`
-3. Auth store sends POST to `/api/auth/register`
-4. Backend `ExpressServer/controllers/auth.controller.js` handles request
-5. Password hashed with bcrypt, user saved to MongoDB `authusers` collection
-6. User redirected to login page
+**Step 1: User fills form**
+```jsx
+// ReactApp/src/pages/Register.tsx
+const onSubmit = async (data) => {
+  await registerUser(data.name, data.email, data.password);
+  nav("/login"); // Go to login page
+};
+```
+**What happens:** User enters name, email, password and clicks "Sign up"
+
+**Step 2: Form calls register function**
+```js
+// ReactApp/src/store/authStore.ts
+register: async (name, email, password) => {
+  const response = await fetch(`${BASE_URL}/api/auth/register`, {
+    method: "POST",
+    body: JSON.stringify({ name, email, password })
+  });
+}
+```
+**What happens:** Sends user data to backend API
+
+**Step 3: Backend processes request**
+```js
+// ExpressServer/controllers/auth.controller.js
+export async function register(req, res) {
+  const passwordHash = await bcrypt.hash(password, 10); // Encrypt password
+  const user = await User.create({ name, email, passwordHash }); // Save to database
+  res.status(201).json({ user }); // Send success response
+}
+```
+**What happens:** Encrypts password → Saves user to MongoDB → Sends success message
+
+**Step 4: User redirected to login**
+**Result:** Account created, user can now login
 
 ### 2. Login Flow
 **Frontend → Backend → Database → JWT Token**
 
-1. User fills form in `ReactApp/src/pages/Login.tsx`
-2. Form calls `login()` from `ReactApp/src/store/authStore.ts`
-3. Auth store sends POST to `/api/auth/login`
-4. Backend `ExpressServer/controllers/auth.controller.js` verifies credentials
-5. JWT token created and sent as cookie
-6. User data stored in auth store, redirected to dashboard
+**Step 1: User enters credentials**
+```jsx
+// ReactApp/src/pages/Login.tsx
+const onSubmit = async (data) => {
+  await login(data.email, data.password);
+  nav("/"); // Go to dashboard
+};
+```
+**What happens:** User enters email and password, clicks "Sign in"
+
+**Step 2: Send login request**
+```js
+// ReactApp/src/store/authStore.ts
+login: async (email, password) => {
+  const response = await fetch(`${BASE_URL}/api/auth/login`, {
+    method: "POST",
+    credentials: "include", // Include cookies
+    body: JSON.stringify({ email, password })
+  });
+  const data = await response.json();
+  set({ user: data.user }); // Save user in state
+}
+```
+**What happens:** Sends credentials to backend, saves user data when successful
+
+**Step 3: Backend verifies credentials**
+```js
+// ExpressServer/controllers/auth.controller.js
+export async function login(req, res) {
+  const user = await User.findOne({ email }); // Find user
+  const ok = await bcrypt.compare(password, user.passwordHash); // Check password
+  
+  const token = jwt.sign({ sub: user._id }, JWT_SECRET); // Create login token
+  res.cookie("token", token, { httpOnly: true }); // Save token in cookie
+  res.json({ user: { id: user._id, name: user.name, email: user.email } });
+}
+```
+**What happens:** Finds user → Checks password → Creates login token → Sends user data
+
+**Step 4: User logged in and redirected to dashboard**
+**Result:** User is authenticated and can access protected pages
 
 ### 3. Route Protection
 **Authentication Check on Every Protected Route**
 
-1. `ReactApp/src/components/ProtectedRoute.tsx` wraps dashboard routes
-2. Calls `checkAuth()` from auth store
-3. Auth store sends GET to `/api/auth/me`
-4. Backend `ExpressServer/middleware/auth.middleware.js` verifies JWT
-5. If valid: user accesses dashboard, if not: redirected to login
+**Step 1: Protected route checks authentication**
+```jsx
+// ReactApp/src/components/ProtectedRoute.tsx
+export default function ProtectedRoute({ children }) {
+  const { user, checkAuth } = useAuth();
+  
+  useEffect(() => {
+    checkAuth(); // Check if user is logged in
+  }, []);
+  
+  if (!user) {
+    return <Navigate to="/login" />; // Redirect to login if not authenticated
+  }
+  
+  return <>{children}</>; // Show protected content if authenticated
+}
+```
+**What happens:** Before showing dashboard, checks if user is logged in
+
+**Step 2: Check authentication with backend**
+```js
+// ReactApp/src/store/authStore.ts
+checkAuth: async () => {
+  const response = await fetch(`${BASE_URL}/api/auth/me`, {
+    credentials: "include" // Send login cookie
+  });
+  const data = await response.json();
+  set({ user: data.user }); // Save user if valid
+}
+```
+**What happens:** Asks backend "Is this user still logged in?"
+
+**Step 3: Backend verifies login token**
+```js
+// ExpressServer/middleware/auth.middleware.js
+export async function requireAuth(req, res, next) {
+  const token = req.cookies?.token; // Get login token from cookie
+  const payload = jwt.verify(token, JWT_SECRET); // Check if token is valid
+  const user = await User.findById(payload.sub); // Find user
+  
+  req.user = user; // Add user to request
+  next(); // Allow access to protected route
+}
+```
+**What happens:** Checks login token → Finds user → Allows or denies access
+
+**Step 4: Result**
+- **If valid:** User sees dashboard
+- **If invalid:** User redirected to login page
 
 ## Professional Folder Structure
 

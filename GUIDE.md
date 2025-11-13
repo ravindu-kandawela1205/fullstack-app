@@ -22,50 +22,228 @@ JWT_EXPIRES_IN=7d
 
 #### Step 3: Database Configuration
 **File:** `ExpressServer/config/db.js`
-- Create database connection function
-- Handle connection errors
+```js
+import mongoose from 'mongoose';
+
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URL);
+    console.log("Connected to MongoDB");
+  } catch (err) {
+    console.error("MongoDB connection error:", err);
+    process.exit(1); // Stop server if database fails
+  }
+};
+
+export default connectDB;
+```
+**What this does:**
+- Creates a function to connect to MongoDB
+- Uses environment variable for database URL
+- Shows success/error messages
+- Stops server if database connection fails
 
 #### Step 4: CORS Configuration
 **File:** `ExpressServer/config/cors.js`
-- Setup CORS with credentials
-- Configure allowed origins
+```js
+import cors from 'cors';
+
+const corsOptions = {
+  origin: process.env.CLIENT_URL, // Allow React app
+  credentials: true               // Allow cookies
+};
+
+export default cors(corsOptions);
+```
+**What this does:**
+- Allows React app (localhost:5173) to call backend
+- Enables cookies to be sent between frontend/backend
+- Prevents other websites from accessing your API
 
 #### Step 5: Main Server Setup
 **File:** `ExpressServer/index.js`
-- Import configurations and routes
-- Setup middleware
-- Start server
+```js
+import express from 'express';
+import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import connectDB from './config/db.js';
+import cors from 'cors';
+import authRoutes from "./route/auth.routes.js";
+
+dotenv.config(); // Load .env file
+
+const app = express();
+const PORT = process.env.PORT || 8000;
+
+// Middleware (runs before routes)
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+app.use(express.json());    // Parse JSON from requests
+app.use(cookieParser());    // Parse cookies from requests
+
+// Routes
+app.use("/api/auth", authRoutes); // All auth routes start with /api/auth
+
+// Connect to database then start server
+connectDB();
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+```
+**What this does:**
+- Loads environment variables from .env file
+- Sets up middleware to handle JSON, cookies, CORS
+- Connects all auth routes to /api/auth path
+- Connects to database first, then starts server
 
 #### Step 6: User Model
 **File:** `ExpressServer/models/authuser.js`
-- Import dotenv for environment variables
-- Connect to MongoDB
-- Create user schema with name, email, passwordHash
-- Export as "authusers" collection
+```js
+import mongoose from "mongoose";
+
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true, minlength: 2, maxlength: 60 },
+  email: { type: String, unique: true, required: true, lowercase: true },
+  passwordHash: { type: String, required: true },
+}, { timestamps: true });
+
+export const User = mongoose.model("authusers", userSchema);
+```
+**What this does:**
+- Defines what user data looks like (name, email, password)
+- Sets validation rules (required, unique, length limits)
+- Creates "authusers" collection in MongoDB
+- Automatically adds createdAt/updatedAt timestamps
+- No database connection needed (index.js handles it)
 
 #### Step 7: Input Validation
 **File:** `ExpressServer/validators/auth.schema.js`
-- Create Zod schemas for register and login
-- Validate name, email, password fields
+```js
+import { z } from "zod";
+
+export const registerSchema = z.object({
+  name: z.string().min(2).max(60),
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+```
+**What this does:**
+- Checks if register data is valid (name 2-60 chars, valid email, password 8+ chars)
+- Checks if login data is valid (valid email, password not empty)
+- Prevents bad data from reaching database
+- Returns clear error messages if validation fails
 
 #### Step 8: Auth Controller
 **File:** `ExpressServer/controllers/auth.controller.js`
-- `register()`: Hash password, save user, create JWT
-- `login()`: Verify credentials, create JWT
-- `logout()`: Clear cookie
-- `me()`: Return current user
+```js
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { User } from "../models/authuser.js";
+import { registerSchema, loginSchema } from "../validators/auth.schema.js";
+
+// REGISTER: Create new user
+export async function register(req, res) {
+  try {
+    const parsed = registerSchema.parse(req.body); // Validate input
+    
+    const existing = await User.findOne({ email: parsed.email });
+    if (existing) return res.status(409).json({ message: "Email already exists" });
+    
+    const passwordHash = await bcrypt.hash(parsed.password, 10); // Encrypt password
+    const user = await User.create({ name: parsed.name, email: parsed.email, passwordHash });
+    
+    const token = jwt.sign({ sub: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    res.cookie("token", token, { httpOnly: true }); // Save token in cookie
+    
+    res.status(201).json({ user: { id: user._id, name: user.name, email: user.email } });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+// LOGIN: Check credentials
+export async function login(req, res) {
+  try {
+    const parsed = loginSchema.parse(req.body); // Validate input
+    
+    const user = await User.findOne({ email: parsed.email });
+    if (!user) return res.status(401).json({ message: "Invalid credentials" });
+    
+    const ok = await bcrypt.compare(parsed.password, user.passwordHash); // Check password
+    if (!ok) return res.status(401).json({ message: "Invalid credentials" });
+    
+    const token = jwt.sign({ sub: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    res.cookie("token", token, { httpOnly: true }); // Save token in cookie
+    
+    res.json({ user: { id: user._id, name: user.name, email: user.email } });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+}
+```
+**What this does:**
+- **Register**: Validates data → Checks if email exists → Encrypts password → Saves user → Creates login token → Sends success
+- **Login**: Validates data → Finds user by email → Checks password → Creates login token → Sends success
+- Uses JWT tokens stored in cookies for authentication
+- Never stores plain text passwords (always encrypted)
 
 #### Step 9: JWT Middleware
 **File:** `ExpressServer/middleware/auth.middleware.js`
-- Verify JWT from cookie or header
-- Attach user to request object
+```js
+import jwt from "jsonwebtoken";
+import { User } from "../models/authuser.js";
+
+export async function requireAuth(req, res, next) {
+  try {
+    const token = req.cookies?.token; // Get token from cookie
+    if (!token) return res.status(401).json({ message: "Not logged in" });
+    
+    const payload = jwt.verify(token, process.env.JWT_SECRET); // Check if token is valid
+    const user = await User.findById(payload.sub); // Find user from token
+    if (!user) return res.status(401).json({ message: "User not found" });
+    
+    req.user = { id: user._id, name: user.name, email: user.email }; // Add user to request
+    next(); // Continue to next function
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+}
+```
+**What this does:**
+- Runs before protected routes (like /api/auth/me)
+- Gets login token from cookie
+- Checks if token is valid and not expired
+- Finds user from database using token
+- Adds user info to request so route can use it
+- Blocks access if no token or invalid token
 
 #### Step 10: Auth Routes
 **File:** `ExpressServer/route/auth.routes.js`
-- POST /register
-- POST /login
-- POST /logout
-- GET /me (protected)
+```js
+import { Router } from "express";
+import { login, register, me, logout } from "../controllers/auth.controller.js";
+import { requireAuth } from "../middleware/auth.middleware.js";
+
+const router = Router();
+
+router.post("/register", register);     // POST /api/auth/register
+router.post("/login", login);           // POST /api/auth/login
+router.get("/me", requireAuth, me);     // GET /api/auth/me (protected)
+router.post("/logout", logout);         // POST /api/auth/logout
+
+export default router;
+```
+**What this does:**
+- Connects URLs to controller functions
+- `/register` → calls register function
+- `/login` → calls login function  
+- `/me` → checks authentication first, then calls me function
+- `/logout` → calls logout function
+- All routes start with `/api/auth` (set in index.js)
 
 ### FRONTEND SETUP
 

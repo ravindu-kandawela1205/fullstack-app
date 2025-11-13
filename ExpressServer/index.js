@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-
+import connectDB from './config/db.js';
 import cors from 'cors';
 import authRoutes from "./route/auth.routes.js";
 import productRoutes from "./route/product.routes.js";
@@ -27,6 +27,8 @@ app.use("/api/users", usersRouter);
 
 // Health check
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
+
+connectDB();
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
