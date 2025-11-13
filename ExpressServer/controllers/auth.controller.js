@@ -87,6 +87,75 @@ export async function me(req, res) {
   res.json({ user: req.user });
 }
 
+export async function updateProfile(req, res) {
+  try {
+    const { name } = req.body;
+    const userId = req.user.id;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { name },
+      { new: true, select: '-passwordHash' }
+    );
+
+    res.json({
+      user: { id: updatedUser._id, name: updatedUser.name, email: updatedUser.email }
+    });
+  } catch (err) {
+    console.error("Update profile error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+export async function changePassword(req, res) {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id;
+
+    console.log("Password change attempt for user:", userId);
+    
+    const user = await User.findById(userId);
+    console.log("Current password hash:", user.passwordHash.substring(0, 20) + "...");
+    
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    
+    if (!isCurrentPasswordValid) {
+      console.log("Current password validation failed");
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+
+    console.log("Current password validated, hashing new password");
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    console.log("New password hash:", newPasswordHash.substring(0, 20) + "...");
+    
+    // Update password directly
+    user.passwordHash = newPasswordHash;
+    await user.save();
+    
+    // Verify the update worked
+    const verifyUser = await User.findById(userId);
+    console.log("Verified password hash after update:", verifyUser.passwordHash.substring(0, 20) + "...");
+    
+    // Test new password works
+    const testNewPassword = await bcrypt.compare(newPassword, verifyUser.passwordHash);
+    console.log("New password verification:", testNewPassword);
+    
+    console.log("Password updated successfully for user:", user.email);
+
+    // Clear auth cookie to logout user
+    const isProd = process.env.NODE_ENV === "production";
+    res.clearCookie("token", { httpOnly: true, secure: isProd, sameSite: isProd ? "none" : "lax" });
+
+    res.json({ 
+      message: "Password updated successfully. Please login again.",
+      logout: true
+    });
+  } catch (err) {
+    console.error("Change password error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
 export function logout(_req, res) {
   const isProd = process.env.NODE_ENV === "production";
   res.clearCookie("token", { httpOnly: true, secure: isProd, sameSite: isProd ? "none" : "lax" });

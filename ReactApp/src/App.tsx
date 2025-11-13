@@ -3,6 +3,7 @@ import AdminLayout from '@/components/layout/AdminLayout';
 import Dashboard from '@/pages/Dashboard';
 import ProductsTable from '@/pages/ProductsTable';
 import LocalUsersTable from '@/pages/LocalUsersTable';
+import Profile from '@/pages/Profile';
 import NotFound from '@/pages/NotFound';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
@@ -31,6 +32,7 @@ function App() {
                 <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
                 <Route path={ROUTES.USERS_LIST} element={<ProductsTable />} />
                 <Route path={ROUTES.LOCAL_USERS} element={<LocalUsersTable />} />
+                <Route path="/profile" element={<Profile />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </AdminLayout>

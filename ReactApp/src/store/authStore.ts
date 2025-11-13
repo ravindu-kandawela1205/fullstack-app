@@ -24,6 +24,7 @@ type AuthState = {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  updateProfile: (name: string) => Promise<void>;
 };
 
 export const useAuth = create<AuthState>((set) => ({
@@ -74,6 +75,18 @@ export const useAuth = create<AuthState>((set) => ({
       set({ user: res.user, initialized: true });
     } catch (e) {
       set({ user: null, initialized: true });
+    }
+  },
+
+  updateProfile: async (name) => {
+    try {
+      const res = await request<{ user: { id: string; name: string; email: string } }>(
+        "/api/auth/profile",
+        { method: "PUT", body: JSON.stringify({ name }) }
+      );
+      set({ user: res.user });
+    } catch (e: any) {
+      throw e;
     }
   },
 }));
