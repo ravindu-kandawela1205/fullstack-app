@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { User, Mail, Calendar, Eye, EyeOff, Camera } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useState, useRef } from "react";
+import { toast } from "sonner";
 
 type ProfileForm = {
   name: string;
@@ -47,8 +48,10 @@ export default function ProfileDialog({ open, onOpenChange }: ProfileDialogProps
       await updateProfile(data.name, previewImage || data.profileImage);
       setIsEditing(false);
       setPreviewImage(null);
+      toast.success('Profile updated successfully!');
     } catch (err: any) {
       console.error('Profile update error:', err);
+      toast.error(err?.message || 'Failed to update profile');
       profileForm.setError('root', { message: err?.message || 'Update failed' });
     }
   };
@@ -91,10 +94,21 @@ export default function ProfileDialog({ open, onOpenChange }: ProfileDialogProps
         throw new Error(error.message);
       }
       
+      const result = await response.json();
+      
+      // If logout flag is set, redirect to login
+      if (result.logout) {
+        toast.success('Password changed successfully! Please login again.');
+        window.location.href = '/login';
+        return;
+      }
+      
       passwordForm.reset();
       setIsChangingPassword(false);
       onOpenChange(false);
+      toast.success('Password changed successfully!');
     } catch (err: any) {
+      toast.error(err?.message || 'Failed to change password');
       passwordForm.setError('root', { message: err?.message || 'Password change failed' });
     }
   };

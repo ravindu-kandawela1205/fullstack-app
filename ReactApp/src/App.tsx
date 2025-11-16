@@ -12,6 +12,7 @@ import PublicRoute from '@/components/PublicRoute';
 import { ROUTES } from '@/constants/routes.constant';
 import { useTheme } from '@/store/themeStore';
 import { useEffect } from 'react';
+import { Toaster } from 'sonner';
 
 function App() {
   const { theme } = useTheme();
@@ -21,6 +22,7 @@ function App() {
   }, [theme]);
   
   return (
+    <>
     <BrowserRouter>
       <Routes>
         <Route path={ROUTES.LOGIN} element={<PublicRoute><Login /></PublicRoute>} />
@@ -40,6 +42,8 @@ function App() {
         } />
       </Routes>
     </BrowserRouter>
+    <Toaster richColors position="top-right" />
+    </>
   );
 }
 

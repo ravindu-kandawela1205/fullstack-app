@@ -70,7 +70,7 @@ export default function UserFormDialog({ open, onOpenChange, editingUser, onSubm
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px] bg-white text-gray-800">
+      <DialogContent className="sm:max-w-[520px] bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700">
         <DialogHeader>
           <DialogTitle>{editingUser ? "Edit User" : "Add User"}</DialogTitle>
         </DialogHeader>
@@ -142,7 +142,7 @@ export default function UserFormDialog({ open, onOpenChange, editingUser, onSubm
                       value={(field.value as any) ?? ""}
                       disabled
                       readOnly
-                      className="bg-muted"
+                      className="bg-muted dark:bg-gray-800"
                     />
                   </FormControl>
                   <FormMessage />

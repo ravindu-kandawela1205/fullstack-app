@@ -172,13 +172,13 @@ export async function changePassword(req, res) {
     
     console.log("Password updated successfully for user:", user.email);
 
-    // Generate new token to keep user logged in
-    const newToken = signToken({ sub: user._id, email: user.email });
-    setAuthCookie(res, newToken);
+    // Clear auth cookie to logout user
+    const isProd = process.env.NODE_ENV === "production";
+    res.clearCookie("token", { httpOnly: true, secure: isProd, sameSite: isProd ? "none" : "lax" });
 
     res.json({ 
-      message: "Password updated successfully",
-      token: newToken
+      message: "Password updated successfully. Please login again.",
+      logout: true
     });
   } catch (err) {
     console.error("Change password error:", err);
