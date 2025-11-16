@@ -1,21 +1,8 @@
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import { User } from "../models/authuser.js";
 import { registerSchema, loginSchema } from "../validators/auth.schema.js";
-
-function signToken(payload) {
-  return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || "7d" });
-}
-
-function setAuthCookie(res, token) {
-  const isProd = process.env.NODE_ENV === "production";
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? "none" : "lax",
-    maxAge: 24 * 60 * 60 * 1000,
-  });
-}
+import { signToken, setAuthCookie } from "../token/generateToken.js";
+import { clearAuthCookie } from "../token/verifyToken.js";
 
 export async function register(req, res) {
   try {
@@ -31,6 +18,7 @@ export async function register(req, res) {
     const user = await User.create({ name: parsed.name, email: parsed.email, passwordHash });
     console.log("User created successfully:", user._id);
 
+    // TOKEN FOLDER: generateToken.js - Create JWT token and set HTTP-only cookie
     const token = signToken({ sub: user._id, email: user.email });
     setAuthCookie(res, token);
 
@@ -66,6 +54,7 @@ export async function login(req, res) {
     }
 
     console.log("Login successful for:", user.email);
+    // TOKEN FOLDER: generateToken.js - Create JWT token and set HTTP-only cookie
     const token = signToken({ sub: user._id, email: user.email });
     setAuthCookie(res, token);
 
@@ -172,9 +161,8 @@ export async function changePassword(req, res) {
     
     console.log("Password updated successfully for user:", user.email);
 
-    // Clear auth cookie to logout user
-    const isProd = process.env.NODE_ENV === "production";
-    res.clearCookie("token", { httpOnly: true, secure: isProd, sameSite: isProd ? "none" : "lax" });
+    // TOKEN FOLDER: verifyToken.js - Clear authentication cookie to logout user
+    clearAuthCookie(res);
 
     res.json({ 
       message: "Password updated successfully. Please login again.",
@@ -187,7 +175,7 @@ export async function changePassword(req, res) {
 }
 
 export function logout(_req, res) {
-  const isProd = process.env.NODE_ENV === "production";
-  res.clearCookie("token", { httpOnly: true, secure: isProd, sameSite: isProd ? "none" : "lax" });
+  // TOKEN FOLDER: verifyToken.js - Clear authentication cookie
+  clearAuthCookie(res);
   res.json({ message: "Logged out" });
 }

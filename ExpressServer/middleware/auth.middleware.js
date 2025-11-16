@@ -1,5 +1,5 @@
-import jwt from "jsonwebtoken";
 import { User } from "../models/authuser.js";
+import { verifyToken } from "../token/verifyToken.js";
 
 export async function requireAuth(req, res, next) {
   try {
@@ -11,7 +11,8 @@ export async function requireAuth(req, res, next) {
 
     if (!token) return res.status(401).json({ message: "Unauthorized" });
 
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    // TOKEN FOLDER: verifyToken.js - Verify JWT token
+    const payload = verifyToken(token);
     const user = await User.findById(payload.sub).select("_id name email profileImage");
     if (!user) return res.status(401).json({ message: "Unauthorized" });
 
