@@ -5,18 +5,13 @@ export async function getProducts(
   page = 1,
   limit = 10
 ): Promise<{ data: Product[]; total: number }> {
-  const skip = (page - 1) * limit;
-
-  const res = await axiosInstance.get(`/api/products?limit=${limit}&skip=${skip}`);
+  const res = await axiosInstance.get(`/api/products?page=${page}`);
   
-  const allProducts = res.data.products || res.data.data || res.data;
-  const total = res.data.total || allProducts.length;
-  
-  // If backend doesn't paginate, do it on frontend
-  const paginatedData = Array.isArray(allProducts) ? allProducts.slice(skip, skip + limit) : allProducts;
+  const products = res.data.products || [];
+  const total = res.data.pagination?.totalItems || 0;
   
   return { 
-    data: paginatedData, 
+    data: products, 
     total 
   };
 }

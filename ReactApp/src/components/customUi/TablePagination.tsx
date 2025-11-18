@@ -24,7 +24,7 @@ export default function TablePagination({
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
 
   return (
-    <div className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+    <div className="flex items-center justify-between px-3 py-2 text-sm border rounded-md">
       <span className="text-muted-foreground">
         {selectedCount} of {total} row(s) selected.
       </span>
@@ -57,42 +57,42 @@ export default function TablePagination({
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8 rounded-md"
+            className="w-8 h-8 rounded-md"
             onClick={() => onPageChange(1)}
             disabled={page <= 1}
             aria-label="First page"
           >
-            <ChevronsLeft className="h-4 w-4" />
+            <ChevronsLeft className="w-4 h-4" />
           </Button>
           <Button
             variant="outline"
             size="icon"
-            className="ml-2 h-8 w-8 rounded-md"
+            className="w-8 h-8 ml-2 rounded-md"
             onClick={() => onPageChange(Math.max(1, page - 1))}
             disabled={page <= 1}
             aria-label="Previous page"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="w-4 h-4" />
           </Button>
           <Button
             variant="outline"
             size="icon"
-            className="ml-2 h-8 w-8 rounded-md"
+            className="w-8 h-8 ml-2 rounded-md"
             onClick={() => onPageChange(Math.min(pageCount, page + 1))}
             disabled={page >= pageCount}
             aria-label="Next page"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="w-4 h-4" />
           </Button>
           <Button
             variant="outline"
             size="icon"
-            className="ml-2 h-8 w-8 rounded-md"
+            className="w-8 h-8 ml-2 rounded-md"
             onClick={() => onPageChange(pageCount)}
             disabled={page >= pageCount}
             aria-label="Last page"
           >
-            <ChevronsRight className="h-4 w-4" />
+            <ChevronsRight className="w-4 h-4" />
           </Button>
         </div>
       </div>

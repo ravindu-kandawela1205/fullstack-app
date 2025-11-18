@@ -18,7 +18,7 @@ export default function ProductsTable() {
   const { data, isLoading } = useProductsQuery(page, pageSize);
   const rows = data?.data || [];
 
-  console.log('Page:', page, 'PageSize:', pageSize, 'Rows count:', rows.length);
+  console.log('Page:', page, 'PageSize:', pageSize, 'Rows count:', rows.length, 'Product IDs:', rows.map(p => p._id));
 
   const openDetails = (product: Product) => {
     setActiveProduct(product);

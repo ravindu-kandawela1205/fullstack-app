@@ -11,7 +11,7 @@ export interface User {
 }
 
 export const usersAPI = {
-  getAll: () => axiosInstance.get<User[]>("/api/users"),
+  getAll: (page = 1, pageSize = 10) => axiosInstance.get(`/api/users?page=${page}&limit=${pageSize}`),
   getById: (id: string) => axiosInstance.get<User>(`/api/users/${id}`),
   create: (user: Omit<User, "_id">) => axiosInstance.post<User>("/api/users", user),
   update: (id: string, user: Partial<User>) => axiosInstance.put<User>(`/api/users/${id}`, user),

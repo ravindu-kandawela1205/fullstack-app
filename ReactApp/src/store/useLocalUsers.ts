@@ -3,8 +3,9 @@ import { usersAPI, User } from "../apis/users/users.api";
 
 type State = {
   users: User[];
+  total: number;
   loading: boolean;
-  fetchUsers: () => Promise<void>;
+  fetchUsers: (page?: number, pageSize?: number) => Promise<void>;
   addUser: (u: Omit<User, "_id">) => Promise<string>;
   updateUser: (id: string, u: Partial<User>) => Promise<string>;
   removeUser: (id: string) => Promise<string>;
@@ -12,13 +13,19 @@ type State = {
 
 export const useLocalUsers = create<State>()((set, get) => ({
   users: [],
+  total: 0,
   loading: false,
   
-  fetchUsers: async () => {
+  fetchUsers: async (page = 1, pageSize = 10) => {
     set({ loading: true });
     try {
-      const response = await usersAPI.getAll();
-      set({ users: response.data, loading: false });
+      const response = await usersAPI.getAll(page, pageSize);
+      // Backend returns { users: [...], pagination: {...} }
+      set({ 
+        users: response.data.users || [], 
+        total: response.data.pagination?.totalItems || 0,
+        loading: false 
+      });
     } catch (error) {
       console.error("Failed to fetch users:", error);
       set({ loading: false });
@@ -28,7 +35,8 @@ export const useLocalUsers = create<State>()((set, get) => ({
   addUser: async (u) => {
     try {
       const response = await usersAPI.create(u);
-      set((s) => ({ users: [response.data.data, ...s.users] }));
+      // Refresh the current page after adding
+      await get().fetchUsers();
       return response.data.message;
     } catch (error) {
       console.error("Failed to add user:", error);
@@ -39,8 +47,9 @@ export const useLocalUsers = create<State>()((set, get) => ({
   updateUser: async (id, u) => {
     try {
       const response = await usersAPI.update(id, u);
+      // Update the user in current state
       set((s) => ({
-        users: s.users.map((x) => (x._id === id ? response.data.data : x))
+        users: Array.isArray(s.users) ? s.users.map((x) => (x._id === id ? response.data.data : x)) : []
       }));
       return response.data.message;
     } catch (error) {
@@ -52,7 +61,8 @@ export const useLocalUsers = create<State>()((set, get) => ({
   removeUser: async (id) => {
     try {
       const response = await usersAPI.delete(id);
-      set((s) => ({ users: s.users.filter((x) => x._id !== id) }));
+      // Refresh the current page after deleting
+      await get().fetchUsers();
       return response.data.message;
     } catch (error) {
       console.error("Failed to remove user:", error);

@@ -3,10 +3,36 @@ import User from "../models/user.js";
 
 const router = Router();
 
-// GET /api/users
-router.get("/", async (_req, res) => {
-  const users = await User.find().sort({ createdAt: -1 });
-  res.json(users);
+// GET /api/users - Paginated users
+router.get("/", async (req, res) => {
+  try {
+    // Extract pagination parameters from frontend
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10; // Fixed backend limit
+    const skip = (page - 1) * limit;
+    
+    const users = await User.find()
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+    
+    const total = await User.countDocuments();
+    const totalPages = Math.ceil(total / limit);
+    
+    res.json({
+      users,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems: total,
+        itemsPerPage: limit,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // GET /api/users/:id

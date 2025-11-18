@@ -14,13 +14,13 @@ async function request<T>(path: string, options: RequestInit = {}) {
   return data as T;
 }
 
-type User = { id: string; name: string; email: string; profileImage?: string } | null;
+type User = { id: string; name: string; email: string; profileImage?: string; role?: string } | null;
 
 type AuthState = {
   user: User;
   loading: boolean;
   initialized: boolean;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, role?: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
@@ -32,12 +32,12 @@ export const useAuth = create<AuthState>((set) => ({
   loading: false,
   initialized: false,
 
-  register: async (name, email, password) => {
+  register: async (name, email, password, role = "user") => {
     set({ loading: true });
     try {
       await request(
         "/api/auth/register",
-        { method: "POST", body: JSON.stringify({ name, email, password }) }
+        { method: "POST", body: JSON.stringify({ name, email, password, role }) }
       );
       set({ loading: false });
     } catch (e: any) {
@@ -49,7 +49,7 @@ export const useAuth = create<AuthState>((set) => ({
   login: async (email, password) => {
     set({ loading: true });
     try {
-      const res = await request<{ user: { id: string; name: string; email: string } }>(
+      const res = await request<{ user: { id: string; name: string; email: string; role: string } }>(
         "/api/auth/login",
         { method: "POST", body: JSON.stringify({ email, password }) }
       );
@@ -71,7 +71,7 @@ export const useAuth = create<AuthState>((set) => ({
 
   checkAuth: async () => {
     try {
-      const res = await request<{ user: { id: string; name: string; email: string } }>("/api/auth/me");
+      const res = await request<{ user: { id: string; name: string; email: string; role: string } }>("/api/auth/me");
       set({ user: res.user, initialized: true });
     } catch (e) {
       set({ user: null, initialized: true });

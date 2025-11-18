@@ -12,13 +12,13 @@ import UserFormDialog from "@/components/customUi/UserFormDialog";
 import UserDetailsDialog from "@/components/customUi/UserDetailsDialog";
 
 export default function LocalUsersPage() {
-  const { users, loading, fetchUsers, addUser, updateUser, removeUser } = useLocalUsers();
-
-  React.useEffect(() => {
-    fetchUsers();
-  }, []);
+  const { users, total, loading, fetchUsers, addUser, updateUser, removeUser } = useLocalUsers();
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(10);
+
+  React.useEffect(() => {
+    fetchUsers(page, pageSize);
+  }, [page, pageSize]);
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
   const [open, setOpen] = React.useState(false);
   const [editingUser, setEditingUser] = React.useState<User | null>(null);
@@ -28,21 +28,8 @@ export default function LocalUsersPage() {
   const [deletingUser, setDeletingUser] = React.useState<User | null>(null);
   const [search, setSearch] = React.useState("");
 
-  const filteredUsers = React.useMemo(() => {
-    if (!search) return users;
-    const query = search.toLowerCase();
-    return users.filter((user) =>
-      user.firstname.toLowerCase().includes(query) ||
-      user.lastname.toLowerCase().includes(query) ||
-      user.email.toLowerCase().includes(query)
-    );
-  }, [users, search]);
-
-  const total = filteredUsers.length;
-  const pageRows = React.useMemo<User[]>(() => {
-    const start = (page - 1) * pageSize;
-    return filteredUsers.slice(start, start + pageSize);
-  }, [filteredUsers, page, pageSize]);
+  // Use server-side data directly
+  const pageRows = users;
 
   const localUserColumns: ColumnDef<User, any>[] = [
     {
@@ -104,7 +91,7 @@ export default function LocalUsersPage() {
     },
     {
       id: "actions",
-      header: () => <div className="text-right pr-1">Actions</div>,
+      header: () => <div className="pr-1 text-right">Actions</div>,
       cell: ({ row, table }) => {
         const meta = table.options.meta as any;
         const u = row.original;
@@ -113,7 +100,7 @@ export default function LocalUsersPage() {
             <Button
               size="icon"
               variant="ghost"
-              className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+              className="w-8 h-8 text-green-600 hover:text-green-700 hover:bg-green-50"
               onClick={() => meta.onViewAction!(u)}
               aria-label="View"
             >
@@ -122,10 +109,14 @@ export default function LocalUsersPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
               </svg>
             </Button>
+
+            {/* edit button  */}
+
+            
             <Button
               size="icon"
               variant="ghost"
-              className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              className="w-8 h-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
               onClick={() => meta.onSecondaryAction!(u)}
               aria-label="Edit"
             >
@@ -133,10 +124,14 @@ export default function LocalUsersPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
               </svg>
             </Button>
+
+
+            {/* delete button  */}
+            
             <Button
               size="icon"
               variant="ghost"
-              className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="w-8 h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
               onClick={() => meta.onRowAction(u)}
               aria-label="Delete"
             >
@@ -174,9 +169,7 @@ export default function LocalUsersPage() {
           email: data.email,
           birthdate: new Date(data.birthday).toISOString(),
         });
-        const newTotal = total + 1;
-        const newPageCount = Math.max(1, Math.ceil(newTotal / pageSize));
-        setPage(newPageCount);
+        // Refresh current page after adding
         toast.success(message);
       }
       setOpen(false);
@@ -208,9 +201,7 @@ export default function LocalUsersPage() {
       const message = await removeUser(deletingUser._id!);
       toast.success(message);
 
-      const newTotal = total - 1;
-      const newPageCount = Math.max(1, Math.ceil(Math.max(0, newTotal) / pageSize));
-      if (page > newPageCount) setPage(newPageCount);
+      // Page will be refreshed by removeUser function
 
       setSelectedIds((prev) => {
         const next = new Set(prev);
@@ -234,7 +225,7 @@ export default function LocalUsersPage() {
           setEditingUser(null);
           setOpen(true);
         }}>
-          <Plus className="h-4 w-4" />
+          <Plus className="w-4 h-4" />
           Add
         </Button>
       </div>
@@ -259,6 +250,7 @@ export default function LocalUsersPage() {
         page={page}
         pageSize={pageSize}
         total={total}
+        loading={loading}
         searchValue={search}
         onSearchChange={(value) => {
           setSearch(value);

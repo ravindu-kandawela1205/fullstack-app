@@ -6,6 +6,10 @@ const userSchema = new mongoose.Schema(
     email: { type: String, unique: true, required: true, lowercase: true, index: true },
     passwordHash: { type: String, required: true },
     profileImage: { type: String, default: null },
+    role: {
+      type: String,
+      default: "user" // every new user is normal user
+    },
   },
   { timestamps: true }
 );

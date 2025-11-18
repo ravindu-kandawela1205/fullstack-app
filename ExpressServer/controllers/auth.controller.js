@@ -15,15 +15,15 @@ export async function register(req, res) {
     const passwordHash = await bcrypt.hash(parsed.password, 10);
     console.log("Creating user with data:", { name: parsed.name, email: parsed.email });
     
-    const user = await User.create({ name: parsed.name, email: parsed.email, passwordHash });
+    const user = await User.create({ name: parsed.name, email: parsed.email, passwordHash ,role:parsed.role });
     console.log("User created successfully:", user._id);
 
     // TOKEN FOLDER: generateToken.js - Create JWT token and set HTTP-only cookie
-    const token = signToken({ sub: user._id, email: user.email });
+    const token = signToken({ sub: user._id, email: user.email ,role:user.role });
     setAuthCookie(res, token);
 
     res.status(201).json({
-      user: { id: user._id, name: user.name, email: user.email, profileImage: user.profileImage },
+      user: { id: user._id, name: user.name, email: user.email, profileImage: user.profileImage,role:user.role },
       token,
     });
   } catch (err) {
@@ -55,11 +55,11 @@ export async function login(req, res) {
 
     console.log("Login successful for:", user.email);
     // TOKEN FOLDER: generateToken.js - Create JWT token and set HTTP-only cookie
-    const token = signToken({ sub: user._id, email: user.email });
+    const token = signToken({ sub: user._id, email: user.email,role:user.role });
     setAuthCookie(res, token);
 
     res.json({
-      user: { id: user._id, name: user.name, email: user.email, profileImage: user.profileImage },
+      user: { id: user._id, name: user.name, email: user.email, profileImage: user.profileImage,role:user.role },
       token,
     });
   } catch (err) {
@@ -79,7 +79,8 @@ export async function me(req, res) {
         id: user._id, 
         name: user.name, 
         email: user.email,
-        profileImage: user.profileImage
+        profileImage: user.profileImage,
+        role: user.role
       }
     });
   } catch (err) {
