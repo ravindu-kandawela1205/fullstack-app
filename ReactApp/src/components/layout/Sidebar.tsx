@@ -42,7 +42,7 @@ export default function Sidebar() {
       </nav>
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-3 px-3 py-2 rounded-md">
-          <div className="flex items-center justify-center w-12 h-12 overflow-hidden text-sm font-medium text-white bg-black rounded-full dark:bg-blue-500">
+          <div className="flex items-center justify-center w-10 h-10 overflow-hidden text-sm font-medium text-white bg-black rounded-full dark:bg-blue-500">
             {user?.profileImage ? (
               <img 
                 src={user.profileImage} 
@@ -55,7 +55,7 @@ export default function Sidebar() {
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user?.name || 'User'}</p>
-            <p className="text-xs text-gray-600 dark:text-gray-400">{user?.email || 'user@example.com'}</p>
+            <p className="text-[10px] text-gray-600 dark:text-gray-400">{user?.email || 'user@example.com'}</p>
           </div>
         </div>
       </div>
