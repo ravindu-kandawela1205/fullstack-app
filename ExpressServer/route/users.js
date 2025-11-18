@@ -8,7 +8,7 @@ router.get("/", async (req, res) => {
   try {
     // Extract pagination parameters from frontend
     const page = parseInt(req.query.page) || 1;
-    const limit = 10; // Fixed backend limit
+    const limit = parseInt(req.query.limit) || 10; // Dynamic limit from frontend
     const skip = (page - 1) * limit;
     
     const users = await User.find()
