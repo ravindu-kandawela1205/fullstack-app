@@ -19,7 +19,7 @@ export async function register(req, res) {
     console.log("User created successfully:", user._id);
 
     // TOKEN FOLDER: generateToken.js - Create JWT token and set HTTP-only cookie
-    const token = signToken({ sub: user._id, email: user.email ,role:user.role });
+    const token = signToken({ sub: user._id, name: user.name, email: user.email, role: user.role });
     setAuthCookie(res, token);
 
     res.status(201).json({
@@ -55,7 +55,7 @@ export async function login(req, res) {
 
     console.log("Login successful for:", user.email);
     // TOKEN FOLDER: generateToken.js - Create JWT token and set HTTP-only cookie
-    const token = signToken({ sub: user._id, email: user.email,role:user.role });
+    const token = signToken({ sub: user._id, name: user.name, email: user.email, role: user.role });
     setAuthCookie(res, token);
 
     res.json({
@@ -78,9 +78,9 @@ export async function me(req, res) {
       user: { 
         id: user._id, 
         name: user.name, 
-        email: user.email,
+        email: user.email, 
         profileImage: user.profileImage,
-        role: user.role
+        role: user.role 
       }
     });
   } catch (err) {

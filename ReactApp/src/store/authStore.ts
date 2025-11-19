@@ -1,5 +1,6 @@
 // src/store/authStore.ts
 import { create } from "zustand";
+import { getUserFromToken } from "../utils/jwtUtils.js";
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
@@ -49,7 +50,7 @@ export const useAuth = create<AuthState>((set) => ({
   login: async (email, password) => {
     set({ loading: true });
     try {
-      const res = await request<{ user: { id: string; name: string; email: string; role: string } }>(
+      const res = await request<{ user: { id: string; name: string; email: string; profileImage?: string; role?: string } }>(
         "/api/auth/login",
         { method: "POST", body: JSON.stringify({ email, password }) }
       );
@@ -71,7 +72,7 @@ export const useAuth = create<AuthState>((set) => ({
 
   checkAuth: async () => {
     try {
-      const res = await request<{ user: { id: string; name: string; email: string; role: string } }>("/api/auth/me");
+      const res = await request<{ user: { id: string; name: string; email: string; profileImage?: string } }>("/api/auth/me");
       set({ user: res.user, initialized: true });
     } catch (e) {
       set({ user: null, initialized: true });
@@ -93,4 +94,6 @@ export const useAuth = create<AuthState>((set) => ({
       throw e;
     }
   },
+
+
 }));

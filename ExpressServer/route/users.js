@@ -1,80 +1,12 @@
 import { Router } from "express";
-import User from "../models/user.js";
+import { getUsers, getUserById, createUser, updateUser, deleteUser } from "../controllers/user.controller.js";
 
 const router = Router();
 
-// GET /api/users - Paginated users
-router.get("/", async (req, res) => {
-  try {
-    // Extract pagination parameters from frontend
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10; // Dynamic limit from frontend
-    const skip = (page - 1) * limit;
-    
-    const users = await User.find()
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
-    
-    const total = await User.countDocuments();
-    const totalPages = Math.ceil(total / limit);
-    
-    res.json({
-      users,
-      pagination: {
-        currentPage: page,
-        totalPages,
-        totalItems: total,
-        itemsPerPage: limit,
-        hasNext: page < totalPages,
-        hasPrev: page > 1
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// GET /api/users/:id
-router.get("/:id", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
-    res.json(user);
-  } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
-
-// POST /api/users
-router.post("/", async (req, res) => {
-  try {
-    const created = await User.create(req.body);
-    res.status(201).json({ data: created, message: "User added successfully!" });
-  } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
-
-// PUT /api/users/:id
-router.put("/:id", async (req, res) => {
-  try {
-    const updated = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    if (!updated) return res.status(404).json({ error: "User not found" });
-    res.json({ data: updated, message: "User updated successfully!" });
-  } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
-
-// DELETE /api/users/:id
-router.delete("/:id", async (req, res) => {
-  const deleted = await User.findByIdAndDelete(req.params.id);
-  if (!deleted) return res.status(404).json({ error: "User not found" });
-  res.json({ ok: true, id: req.params.id, message: "User deleted successfully!" });
-});
+router.get("/", getUsers);
+router.get("/:id", getUserById);
+router.post("/", createUser);
+router.put("/:id", updateUser);
+router.delete("/:id", deleteUser);
 
 export default router;

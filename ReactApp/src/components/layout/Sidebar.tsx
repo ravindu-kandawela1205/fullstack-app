@@ -16,7 +16,15 @@ export default function Sidebar() {
   return (
     <div className="fixed top-0 left-0 flex flex-col w-64 h-screen text-gray-900 bg-white border-r border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
       <div className="flex items-center h-16 px-6 border-b border-gray-200 dark:border-gray-700">
-        <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Admin Panel</h1>
+        {user?.role === 'admin' ? (
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Admin Panel</h1>
+        ) : (
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">User Panel</h1>
+        )}
+
+        
+        
+       
       </div>
       <nav className="flex-1 p-4 overflow-auto">
         <div className="space-y-2">
@@ -48,6 +56,10 @@ export default function Sidebar() {
                 src={user.profileImage} 
                 alt="Profile" 
                 className="object-cover w-full h-full"
+                onError={(e) => {
+                  console.error('Profile image failed to load:', user.profileImage);
+                  e.currentTarget.style.display = 'none';
+                }}
               />
             ) : (
               user?.name?.charAt(0)?.toUpperCase() || 'U'

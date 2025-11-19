@@ -10,7 +10,7 @@ import { useAuth } from "@/store/authStore";
 import { useTheme } from "@/store/themeStore";
 import { useNavigate } from "react-router-dom";
 import ProfileDialog from "@/components/ProfileDialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -24,29 +24,29 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-64 right-0 h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 z-10">
+    <header className="fixed top-0 right-0 z-10 flex items-center justify-between h-16 px-6 bg-white border-b border-gray-200 left-64 dark:bg-gray-900 dark:border-gray-700">
       <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Welcome to Admin Panel</h2>
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={toggleTheme}>
-          {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+          {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
         </Button>
         <Button variant="ghost" size="icon">
-          <Bell className="h-5 w-5" />
+          <Bell className="w-5 h-5" />
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2">
-              <User className="h-5 w-5" />
+              <User className="w-5 h-5" />
               <span>{user?.name || "Admin User"}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => setProfileOpen(true)}>
-              <User className="mr-2 h-4 w-4" />
+              <User className="w-4 h-4 mr-2" />
               Profile
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
+              <LogOut className="w-4 h-4 mr-2" />
               Logout
             </DropdownMenuItem>
           </DropdownMenuContent>

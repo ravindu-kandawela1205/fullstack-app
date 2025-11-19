@@ -130,6 +130,10 @@ export default function ProfileDialog({ open, onOpenChange }: ProfileDialogProps
                     src={previewImage || user?.profileImage} 
                     alt="Profile" 
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.error('Profile dialog image failed to load:', previewImage || user?.profileImage);
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
                 ) : (
                   user?.name?.charAt(0)?.toUpperCase() || 'U'
