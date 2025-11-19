@@ -10,14 +10,13 @@ import { useAuth } from "@/store/authStore";
 import { useTheme } from "@/store/themeStore";
 import { useNavigate } from "react-router-dom";
 import ProfileDialog from "@/components/ProfileDialog";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function Header() {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
-
   const handleLogout = async () => {
     await logout();
     navigate("/login");
@@ -25,7 +24,13 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 right-0 z-10 flex items-center justify-between h-16 px-6 bg-white border-b border-gray-200 left-64 dark:bg-gray-900 dark:border-gray-700">
-      <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Welcome to Admin Panel</h2>
+      {user?.role === 'admin' ? (
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Welcome to Admin Panel</h2>
+
+      ) : (
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Welcome to User Panel</h2>
+
+      )}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={toggleTheme}>
           {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
