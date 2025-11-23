@@ -13,7 +13,8 @@ const productSchema = new mongoose.Schema({
   color: String,
   size: String,
   availability: String,
-  internalId: Number
+  internalId: Number,
+  image: String
 }, { timestamps: true });
 
 export default mongoose.model("products", productSchema);

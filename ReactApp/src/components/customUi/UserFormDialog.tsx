@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,6 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import S3Upload from "@/components/S3Upload";
 import type { User } from "@/apis/users/users.api";
 
 const schema = z.object({
@@ -18,6 +19,7 @@ const schema = z.object({
   gender: z.enum(["male", "female", "other"]),
   email: z.string().email("Invalid email address"),
   phone: z.string().optional(),
+  image: z.string().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -30,6 +32,8 @@ type UserFormDialogProps = {
 };
 
 export default function UserFormDialog({ open, onOpenChange, editingUser, onSubmit }: UserFormDialogProps) {
+  const [imageUrl, setImageUrl] = useState("");
+  
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     mode: "onSubmit",
@@ -41,11 +45,13 @@ export default function UserFormDialog({ open, onOpenChange, editingUser, onSubm
       email: "",
       phone: "",
       birthday: "",
+      image: "",
     },
   });
 
   useEffect(() => {
     if (editingUser) {
+      setImageUrl(editingUser.image || "");
       form.reset({
         firstName: editingUser.firstname,
         lastName: editingUser.lastname,
@@ -54,8 +60,10 @@ export default function UserFormDialog({ open, onOpenChange, editingUser, onSubm
         email: editingUser.email,
         phone: "",
         birthday: editingUser.birthdate ? editingUser.birthdate.split('T')[0] : "",
+        image: editingUser.image || "",
       });
     } else {
+      setImageUrl("");
       form.reset({
         firstName: "",
         lastName: "",
@@ -64,6 +72,7 @@ export default function UserFormDialog({ open, onOpenChange, editingUser, onSubm
         email: "",
         phone: "",
         birthday: "",
+        image: "",
       });
     }
   }, [editingUser, form]);
@@ -76,7 +85,14 @@ export default function UserFormDialog({ open, onOpenChange, editingUser, onSubm
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+          <form onSubmit={form.handleSubmit((data) => onSubmit({ ...data, image: imageUrl }))} noValidate className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+            <div className="sm:col-span-2">
+              <S3Upload
+                value={imageUrl}
+                onChange={setImageUrl}
+                label="User Image"
+              />
+            </div>
             <FormField
               control={form.control}
               name="firstName"

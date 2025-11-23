@@ -6,6 +6,7 @@ import cors from 'cors';
 import authRoutes from "./route/auth.routes.js";
 import productRoutes from "./route/product.routes.js";
 import usersRouter from "./route/users.js";
+import uploadRoutes from "./route/upload.routes.js";
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/users", usersRouter);
+app.use("/api/upload", uploadRoutes);
 
 // Health check
 app.get("/api/health", (_req, res) => res.json({ ok: true }));

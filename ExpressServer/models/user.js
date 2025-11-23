@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
     gender: { type: String, required : true, trim: true },
     email: { type: String, required : true, trim: true },
     birthdate: { type: String, required : true, trim: true },
+    image: String
   },
   { timestamps: true }
 );

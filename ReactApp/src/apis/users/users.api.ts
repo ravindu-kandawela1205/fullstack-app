@@ -8,6 +8,7 @@ export interface User {
   gender: string;
   email: string;
   birthdate: string;
+  image?: string;
 }
 
 export const usersAPI = {

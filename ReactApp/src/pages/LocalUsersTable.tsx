@@ -60,6 +60,20 @@ export default function LocalUsersPage() {
       size: 80,
     },
     {
+      accessorKey: "image",
+      header: "Image",
+      cell: ({ row }) => (
+        row.original.image ? (
+          <img src={row.original.image} alt="User" className="w-10 h-10 rounded-full object-cover" />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs">
+            {row.original.firstname?.charAt(0)}{row.original.lastname?.charAt(0)}
+          </div>
+        )
+      ),
+      size: 60,
+    },
+    {
       accessorKey: "firstname",
       header: "First Name",
     },
@@ -164,6 +178,7 @@ export default function LocalUsersPage() {
           gender: data.gender,
           email: data.email,
           birthdate: new Date(data.birthday).toISOString(),
+          image: data.image,
         });
         toast.success(message);
         setEditingUser(null);
@@ -175,6 +190,7 @@ export default function LocalUsersPage() {
           gender: data.gender,
           email: data.email,
           birthdate: new Date(data.birthday).toISOString(),
+          image: data.image,
         });
         // Refresh current page after adding
         toast.success(message);
@@ -307,6 +323,12 @@ export default function LocalUsersPage() {
               <p className="text-xs text-gray-500">Birthday</p>
               <p className="font-medium">{viewingUser.birthdate ? new Date(viewingUser.birthdate).toLocaleDateString() : "N/A"}</p>
             </div>
+            {viewingUser.image && (
+              <div className="sm:col-span-2">
+                <p className="text-xs text-gray-500">Image</p>
+                <img src={viewingUser.image} alt="User" className="w-32 h-32 rounded-lg object-cover mt-2" />
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-sm text-gray-500">No user selected.</div>
