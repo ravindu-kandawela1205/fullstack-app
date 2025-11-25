@@ -32,7 +32,7 @@ function App() {
             <AdminLayout>
               <Routes>
                 <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
-                <Route path={ROUTES.USERS_LIST} element={<ProductsTable />} />
+                <Route path={ROUTES.product_list} element={<ProductsTable />} />
                 <Route path={ROUTES.LOCAL_USERS} element={<LocalUsersTable />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="*" element={<NotFound />} />

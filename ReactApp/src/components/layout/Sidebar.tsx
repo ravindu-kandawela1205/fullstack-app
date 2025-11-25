@@ -6,7 +6,7 @@ import { useAuth } from "@/store/authStore";
 
 const menuItems = [
   { path: ROUTES.DASHBOARD, label: "Dashboard", icon: LayoutDashboard },
-  { path: ROUTES.USERS_LIST, label: "Products", icon: Users },
+  { path: ROUTES.product_list, label: "Products", icon: Users },
   { path: ROUTES.LOCAL_USERS, label: "Local Users", icon: UserCog, adminOnly: false },
 ];
 
