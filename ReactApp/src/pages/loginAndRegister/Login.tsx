@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useAuth } from "../store/authStore";
+import { useAuth } from "@/store/authStore";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 
@@ -31,8 +31,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
-      <div className="w-100 space-y-3 p-3 bg-white dark:bg-gray-900 rounded-lg shadow-md border border-gray-200 dark:border-gray-800">
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="p-3 space-y-3 bg-white border border-gray-200 rounded-lg shadow-md w-100 dark:bg-gray-900 dark:border-gray-800">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Sign in</h2>
           <p className="mt-2 text-gray-600 dark:text-gray-400">Welcome back to your account</p>
@@ -41,7 +41,7 @@ export default function Login() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {form.formState.errors.root?.message && (
-              <div className="text-sm text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 rounded px-3 py-2">
+              <div className="px-3 py-2 text-sm text-red-600 border border-red-200 rounded dark:text-red-400 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
                 {form.formState.errors.root.message}
               </div>
             )}
@@ -78,10 +78,10 @@ export default function Login() {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
                         onClick={() => setShowPassword(!showPassword)}
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </Button>
                     </div>
                   </FormControl>

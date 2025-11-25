@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-import { useAuth } from '../store/authStore';
+import { useAuth } from "@/store/authStore";
 
 const registerSchema = z
   .object({

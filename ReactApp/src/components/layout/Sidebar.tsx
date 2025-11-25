@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Users, UserCog, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Users, UserCog, Mail, ChevronRight } from "lucide-react";
 import { ROUTES } from "@/constants/routes.constant";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/store/authStore";
@@ -8,6 +8,8 @@ const menuItems = [
   { path: ROUTES.DASHBOARD, label: "Dashboard", icon: LayoutDashboard },
   { path: ROUTES.product_list, label: "Products", icon: Users },
   { path: ROUTES.LOCAL_USERS, label: "Local Users", icon: UserCog, adminOnly: false },
+  { path: ROUTES.INQUIRY, label: "Inquiry", icon: Mail, adminOnly: false },
+
 ];
 
 export default function Sidebar() {
