@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import emailjs from "@emailjs/browser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Mail, Phone, User, MessageSquare } from "lucide-react";
+import { sendEmail } from "@/lib/emailService";
 
 const inquirySchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -37,32 +37,34 @@ export default function Inquiry() {
     setSending(true);
     try {
       // Send to admin
-      await emailjs.send(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID,
-        import.meta.env.VITE_EMAILJS_ADMIN_TEMPLATE_ID,
-        {
+      const adminResult = await sendEmail({
+        templateId: import.meta.env.VITE_EMAILJS_ADMIN_TEMPLATE_ID,
+        data: {
           from_name: data.name,
           from_email: data.email,
           from_phone: data.phone,
           subject: data.subject,
           message: data.message,
         },
-        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-      );
+      });
 
       // Send auto-reply to user
-      await emailjs.send(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID,
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-        {
+      const userResult = await sendEmail({
+        templateId: import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        data: {
           from_name: data.name,
           from_email: data.email,
+          subject: data.subject,
+          message: data.message,
         },
-        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-      );
+      });
 
-      toast.success("Inquiry sent successfully!");
-      reset();
+      if (adminResult.success && userResult.success) {
+        toast.success("Inquiry sent successfully!");
+        reset();
+      } else {
+        toast.error("Failed to send inquiry. Please try again.");
+      }
     } catch (error) {
       console.error("EmailJS Error:", error);
       toast.error("Failed to send inquiry. Please try again.");
