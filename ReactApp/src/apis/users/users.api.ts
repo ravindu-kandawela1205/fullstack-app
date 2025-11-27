@@ -11,10 +11,25 @@ export interface User {
   image?: string;
 }
 
-export const usersAPI = {
-  getAll: (page = 1, pageSize = 10) => axiosInstance.get(`/api/users?page=${page}&limit=${pageSize}`),
-  getById: (id: string) => axiosInstance.get<User>(`/api/users/${id}`),
-  create: (user: Omit<User, "_id">) => axiosInstance.post<User>("/api/users", user),
-  update: (id: string, user: Partial<User>) => axiosInstance.put<User>(`/api/users/${id}`, user),
-  delete: (id: string) => axiosInstance.delete(`/api/users/${id}`)
-};
+export async function getUsers(page = 1, limit = 10): Promise<{ data: User[]; total: number }> {
+  const res = await axiosInstance.get(`/api/users?page=${page}&limit=${limit}`);
+  return {
+    data: res.data.users || [],
+    total: res.data.pagination?.totalItems || 0,
+  };
+}
+
+export async function createUser(userData: Omit<User, "_id">) {
+  const res = await axiosInstance.post("/api/users", userData);
+  return res.data;
+}
+
+export async function updateUser(id: string, userData: Partial<User>) {
+  const res = await axiosInstance.put(`/api/users/${id}`, userData);
+  return res.data;
+}
+
+export async function deleteUser(id: string) {
+  const res = await axiosInstance.delete(`/api/users/${id}`);
+  return res.data;
+}

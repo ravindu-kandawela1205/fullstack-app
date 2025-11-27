@@ -44,8 +44,8 @@ export default function ProductsTable() {
     if (!deletingProduct) return;
 
     try {
-      await deleteProduct(deletingProduct._id);
-      toast.success('Product deleted successfully!');
+      const response = await deleteProduct(deletingProduct._id);
+      toast.success(response.message);
       refetch();
       setDeleteOpen(false);
       setDeletingProduct(null);

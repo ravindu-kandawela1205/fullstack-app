@@ -16,16 +16,17 @@ export async function getProducts(
   };
 }
 
-export async function createProduct(productData: Partial<Product>): Promise<Product> {
+export async function createProduct(productData: Partial<Product>) {
   const res = await axiosInstance.post('/api/products', productData);
-  return res.data.product;
+  return res.data;
 }
 
-export async function updateProduct(id: string, productData: Partial<Product>): Promise<Product> {
+export async function updateProduct(id: string, productData: Partial<Product>) {
   const res = await axiosInstance.put(`/api/products/${id}`, productData);
-  return res.data.product;
+  return res.data;
 }
 
-export async function deleteProduct(id: string): Promise<void> {
-  await axiosInstance.delete(`/api/products/${id}`);
+export async function deleteProduct(id: string) {
+  const res = await axiosInstance.delete(`/api/products/${id}`);
+  return res.data;
 }

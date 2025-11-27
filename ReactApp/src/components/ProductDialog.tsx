@@ -77,11 +77,11 @@ export default function ProductDialog({ open, onOpenChange, product, onSuccess }
       };
 
       if (product) {
-        await updateProduct(product._id, productData);
-        toast.success("Product updated successfully!");
+        const response = await updateProduct(product._id, productData);
+        toast.success(response.message);
       } else {
-        await createProduct(productData);
-        toast.success("Product created successfully!");
+        const response = await createProduct(productData);
+        toast.success(response.message);
       }
 
       onSuccess();
