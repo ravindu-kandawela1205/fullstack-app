@@ -3,32 +3,79 @@ import { User } from "../models/authuser.js";
 import { registerSchema, loginSchema } from "../validators/auth.schema.js";
 import { signToken, setAuthCookie } from "../token/generateToken.js";
 import { clearAuthCookie } from "../token/verifyToken.js";
-
+import { generateSecurePassword } from "../utils/passwordGenerator.js";
+import { sendWelcomeEmail } from "../services/email.service.js";
 export async function register(req, res) {
   try {
     console.log("Registration attempt:", req.body);
     const parsed = registerSchema.parse(req.body);
 
     const existing = await User.findOne({ email: parsed.email });
-    if (existing) return res.status(409).json({ message: "Email already registered" });
+    if (existing)
+      return res.status(409).json({ message: "Email already registered" });
 
-    const passwordHash = await bcrypt.hash(parsed.password, 10);
-    console.log("Creating user with data:", { name: parsed.name, email: parsed.email });
-    
-    const user = await User.create({ name: parsed.name, email: parsed.email, passwordHash ,role:parsed.role });
+    //Generate secure random password
+    const generatedPassword = generateSecurePassword(12);
+    console.log("Generated password for:", parsed.email);
+
+    // Send welcome email with generated password
+    const passwordHash = await bcrypt.hash(generatedPassword, 10);
+    console.log("Creating user with data:", {
+      name: parsed.name,
+      email: parsed.email,
+    });
+
+    //old parepassword
+
+    // const passwordHash = await bcrypt.hash(parsed.password, 10);
+    // console.log("Creating user with data:", { name: parsed.name, email: parsed.email });
+
+    const user = await User.create({
+      name: parsed.name,
+      email: parsed.email,
+      passwordHash,
+      role: parsed.role || "user",
+    });
     console.log("User created successfully:", user._id);
 
+    //Send welcome email with password
+
+     try {
+      await sendWelcomeEmail(parsed.email, parsed.name, generatedPassword);
+      console.log("Welcome email sent to:", parsed.email);
+    } catch (emailError) {
+      console.error("Failed to send welcome email:", emailError);
+      // Delete the user if email fails (optional - you can keep user and handle differently)
+      await User.findByIdAndDelete(user._id);
+      return res.status(500).json({ 
+        message: "Failed to send welcome email. Please try again or contact support." 
+      });
+    }
+
     // TOKEN FOLDER: generateToken.js - Create JWT token and set HTTP-only cookie
-    const token = signToken({ sub: user._id, name: user.name, email: user.email, role: user.role });
+    const token = signToken({
+      sub: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    });
     setAuthCookie(res, token);
 
     res.status(201).json({
-      user: { id: user._id, name: user.name, email: user.email, profileImage: user.profileImage,role:user.role },
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        profileImage: user.profileImage,
+        role: user.role,
+      },
       token,
     });
   } catch (err) {
     if (err.name === "ZodError") {
-      return res.status(400).json({ message: "Invalid input", issues: err.issues });
+      return res
+        .status(400)
+        .json({ message: "Invalid input", issues: err.issues });
     }
     console.error("Registration error:", err);
     res.status(500).json({ message: "Server error" });
@@ -39,13 +86,13 @@ export async function login(req, res) {
   try {
     console.log("Login attempt:", req.body.email);
     const parsed = loginSchema.parse(req.body);
-    
+
     const user = await User.findOne({ email: parsed.email });
     if (!user) {
       console.log("User not found:", parsed.email);
       return res.status(401).json({ message: "Invalid credentials" });
     }
-    
+
     console.log("User found:", user.email);
     const ok = await bcrypt.compare(parsed.password, user.passwordHash);
     if (!ok) {
@@ -55,16 +102,29 @@ export async function login(req, res) {
 
     console.log("Login successful for:", user.email);
     // TOKEN FOLDER: generateToken.js - Create JWT token and set HTTP-only cookie
-    const token = signToken({ sub: user._id, name: user.name, email: user.email, role: user.role });
+    const token = signToken({
+      sub: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    });
     setAuthCookie(res, token);
 
     res.json({
-      user: { id: user._id, name: user.name, email: user.email, profileImage: user.profileImage,role:user.role },
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        profileImage: user.profileImage,
+        role: user.role,
+      },
       token,
     });
   } catch (err) {
     if (err.name === "ZodError") {
-      return res.status(400).json({ message: "Invalid input", issues: err.issues });
+      return res
+        .status(400)
+        .json({ message: "Invalid input", issues: err.issues });
     }
     console.error("Login error:", err);
     res.status(500).json({ message: "Server error" });
@@ -73,15 +133,15 @@ export async function login(req, res) {
 
 export async function me(req, res) {
   try {
-    const user = await User.findById(req.user.id).select('-passwordHash');
-    res.json({ 
-      user: { 
-        id: user._id, 
-        name: user.name, 
-        email: user.email, 
+    const user = await User.findById(req.user.id).select("-passwordHash");
+    res.json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
         profileImage: user.profileImage,
-        role: user.role 
-      }
+        role: user.role,
+      },
     });
   } catch (err) {
     console.error("Get user error:", err);
@@ -94,32 +154,35 @@ export async function updateProfile(req, res) {
     const { name, profileImage } = req.body;
     const userId = req.user.id;
 
-    console.log('Update profile request:', { userId, name, imageSize: profileImage ? profileImage.length : 0 });
+    console.log("Update profile request:", {
+      userId,
+      name,
+      imageSize: profileImage ? profileImage.length : 0,
+    });
 
     const updateData = { name };
     if (profileImage !== undefined) {
       updateData.profileImage = profileImage;
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      updateData,
-      { new: true, select: '-passwordHash' }
-    );
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+      select: "-passwordHash",
+    });
 
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    console.log('Profile updated successfully for user:', updatedUser.email);
+    console.log("Profile updated successfully for user:", updatedUser.email);
 
     res.json({
-      user: { 
-        id: updatedUser._id, 
-        name: updatedUser.name, 
+      user: {
+        id: updatedUser._id,
+        name: updatedUser.name,
         email: updatedUser.email,
-        profileImage: updatedUser.profileImage
-      }
+        profileImage: updatedUser.profileImage,
+      },
     });
   } catch (err) {
     console.error("Update profile error:", err);
@@ -133,12 +196,18 @@ export async function changePassword(req, res) {
     const userId = req.user.id;
 
     console.log("Password change attempt for user:", userId);
-    
+
     const user = await User.findById(userId);
-    console.log("Current password hash:", user.passwordHash.substring(0, 20) + "...");
-    
-    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
-    
+    console.log(
+      "Current password hash:",
+      user.passwordHash.substring(0, 20) + "..."
+    );
+
+    const isCurrentPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.passwordHash
+    );
+
     if (!isCurrentPasswordValid) {
       console.log("Current password validation failed");
       return res.status(400).json({ message: "Current password is incorrect" });
@@ -147,27 +216,33 @@ export async function changePassword(req, res) {
     console.log("Current password validated, hashing new password");
     const newPasswordHash = await bcrypt.hash(newPassword, 10);
     console.log("New password hash:", newPasswordHash.substring(0, 20) + "...");
-    
+
     // Update password directly
     user.passwordHash = newPasswordHash;
     await user.save();
-    
+
     // Verify the update worked
     const verifyUser = await User.findById(userId);
-    console.log("Verified password hash after update:", verifyUser.passwordHash.substring(0, 20) + "...");
-    
+    console.log(
+      "Verified password hash after update:",
+      verifyUser.passwordHash.substring(0, 20) + "..."
+    );
+
     // Test new password works
-    const testNewPassword = await bcrypt.compare(newPassword, verifyUser.passwordHash);
+    const testNewPassword = await bcrypt.compare(
+      newPassword,
+      verifyUser.passwordHash
+    );
     console.log("New password verification:", testNewPassword);
-    
+
     console.log("Password updated successfully for user:", user.email);
 
     // TOKEN FOLDER: verifyToken.js - Clear authentication cookie to logout user
     clearAuthCookie(res);
 
-    res.json({ 
+    res.json({
       message: "Password updated successfully. Please login again.",
-      logout: true
+      logout: true,
     });
   } catch (err) {
     console.error("Change password error:", err);

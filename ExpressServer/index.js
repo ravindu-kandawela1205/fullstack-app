@@ -38,4 +38,5 @@ app.listen(PORT, () => {
   console.log(`Health check: http://localhost:${PORT}/api/health`);
   console.log(`Login endpoint: http://localhost:${PORT}/api/auth/login`);
   console.log(`Register endpoint: http://localhost:${PORT}/api/auth/register`);
+  console.log(`Email config: ${process.env.EMAIL_HOST}:${process.env.EMAIL_PORT}`);
 });

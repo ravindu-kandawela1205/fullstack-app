@@ -1,27 +1,38 @@
 // src/store/authStore.ts
-import { create } from "zustand";
-import { getUserFromToken } from "../utils/jwtUtils.js";
+import { create } from 'zustand';
+import { getUserFromToken } from '../utils/jwtUtils.js';
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
 async function request<T>(path: string, options: RequestInit = {}) {
   const res = await fetch(`${BASE_URL}${path}`, {
-    credentials: "include",
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
     ...options,
   });
-  const data = await res.json().catch(() => ({} as any));
-  if (!res.ok) throw new Error(data?.message || "Request failed");
+  const data = await res.json().catch(() => ({}) as any);
+  if (!res.ok) throw new Error(data?.message || 'Request failed');
   return data as T;
 }
 
-type User = { id: string; name: string; email: string; profileImage?: string; role?: string } | null;
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  profileImage?: string;
+  role?: string;
+} | null;
 
 type AuthState = {
   user: User;
   loading: boolean;
   initialized: boolean;
-  register: (name: string, email: string, password: string, role?: string) => Promise<void>;
+  register: (
+    name: string,
+    email: string,
+    password: string,
+    role?: string
+  ) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
@@ -33,13 +44,13 @@ export const useAuth = create<AuthState>((set) => ({
   loading: false,
   initialized: false,
 
-  register: async (name, email, password, role = "user") => {
+  register: async (name, email, role = 'user') => {
     set({ loading: true });
     try {
-      await request(
-        "/api/auth/register",
-        { method: "POST", body: JSON.stringify({ name, email, password, role }) }
-      );
+      await request('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ name, email, role }),
+      });
       set({ loading: false });
     } catch (e: any) {
       set({ loading: false });
@@ -50,10 +61,18 @@ export const useAuth = create<AuthState>((set) => ({
   login: async (email, password) => {
     set({ loading: true });
     try {
-      const res = await request<{ user: { id: string; name: string; email: string; profileImage?: string; role?: string } }>(
-        "/api/auth/login",
-        { method: "POST", body: JSON.stringify({ email, password }) }
-      );
+      const res = await request<{
+        user: {
+          id: string;
+          name: string;
+          email: string;
+          profileImage?: string;
+          role?: string;
+        };
+      }>('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
       set({ user: res.user, loading: false });
     } catch (e: any) {
       set({ loading: false });
@@ -63,7 +82,7 @@ export const useAuth = create<AuthState>((set) => ({
 
   logout: async () => {
     try {
-      await request("/api/auth/logout", { method: "POST" });
+      await request('/api/auth/logout', { method: 'POST' });
       set({ user: null });
     } catch (e) {
       set({ user: null }); // Clear user even if request fails
@@ -72,7 +91,14 @@ export const useAuth = create<AuthState>((set) => ({
 
   checkAuth: async () => {
     try {
-      const res = await request<{ user: { id: string; name: string; email: string; profileImage?: string } }>("/api/auth/me");
+      const res = await request<{
+        user: {
+          id: string;
+          name: string;
+          email: string;
+          profileImage?: string;
+        };
+      }>('/api/auth/me');
       set({ user: res.user, initialized: true });
     } catch (e) {
       set({ user: null, initialized: true });
@@ -85,15 +111,17 @@ export const useAuth = create<AuthState>((set) => ({
       if (profileImage !== undefined) {
         body.profileImage = profileImage;
       }
-      const res = await request<{ user: { id: string; name: string; email: string; profileImage?: string } }>(
-        "/api/auth/profile",
-        { method: "PUT", body: JSON.stringify(body) }
-      );
+      const res = await request<{
+        user: {
+          id: string;
+          name: string;
+          email: string;
+          profileImage?: string;
+        };
+      }>('/api/auth/profile', { method: 'PUT', body: JSON.stringify(body) });
       set({ user: res.user });
     } catch (e: any) {
       throw e;
     }
   },
-
-
 }));
