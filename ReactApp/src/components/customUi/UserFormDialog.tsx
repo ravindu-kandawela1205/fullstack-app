@@ -208,7 +208,7 @@ export default function UserFormDialog({ open, onOpenChange, editingUser, onSubm
               )}
             />
 
-            <DialogFooter className="sm:col-span-2 mt-2">
+            <DialogFooter className="mt-2 sm:col-span-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
               <Button type="submit">Save</Button>
             </DialogFooter>

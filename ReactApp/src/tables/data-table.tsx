@@ -124,7 +124,7 @@ export function DataTable<TData extends DataRow>({
       )}
 
       {/* Table */}
-      <div className="rounded-md border">
+      <div className="border rounded-md">
         <Table>
           <TableHeader>
             <TableRow>
@@ -169,7 +169,7 @@ export function DataTable<TData extends DataRow>({
               ))
             ) : data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="h-24 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={9} className="h-24 text-sm text-center text-muted-foreground">
                   No data available
                 </TableCell>
               </TableRow>
