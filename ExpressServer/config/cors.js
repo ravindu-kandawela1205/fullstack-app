@@ -1,10 +1,8 @@
 import cors from 'cors';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import { application } from './application.js';
 
 const corsOptions = {
-  origin: process.env.CLIENT_URL,
+  origin: application.CLIENT_URL,
   credentials: true
 };
 

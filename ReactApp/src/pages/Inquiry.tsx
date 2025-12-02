@@ -74,7 +74,7 @@ export default function Inquiry() {
   };
 
   return (
-    <div className="container max-w-2xl py-8">
+    <div className="container mx-auto max-w-2xl py-8">
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Contact Inquiry</CardTitle>

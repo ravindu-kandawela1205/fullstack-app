@@ -4,7 +4,8 @@ import { registerSchema, loginSchema } from "../validators/auth.schema.js";
 import { signToken, setAuthCookie } from "../token/generateToken.js";
 import { clearAuthCookie } from "../token/verifyToken.js";
 import { generateSecurePassword } from "../utils/passwordGenerator.js";
-import { sendWelcomeEmail } from "../services/email.service.js";
+import { sendEmail } from "../services/email.service.js";
+import { welcomeTemplate } from "../constants/email.templates.js";
 export async function register(req, res) {
   try {
     console.log("Registration attempt:", req.body);
@@ -39,13 +40,12 @@ export async function register(req, res) {
     console.log("User created successfully:", user._id);
 
     //Send welcome email with password
-
-     try {
-      await sendWelcomeEmail(parsed.email, parsed.name, generatedPassword);
+    try {
+      const { to, subject, html } = welcomeTemplate(parsed.name, parsed.email, generatedPassword);
+      await sendEmail({ to, subject, html });
       console.log("Welcome email sent to:", parsed.email);
     } catch (emailError) {
       console.error("Failed to send welcome email:", emailError);
-      // Delete the user if email fails (optional - you can keep user and handle differently)
       await User.findByIdAndDelete(user._id);
       return res.status(500).json({ 
         message: "Failed to send welcome email. Please try again or contact support." 

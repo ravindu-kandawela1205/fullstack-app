@@ -13,12 +13,19 @@ export async function requireAuth(req, res, next) {
 
     // TOKEN FOLDER: verifyToken.js - Verify JWT token
     const payload = verifyToken(token);
-    const user = await User.findById(payload.sub).select("_id name email profileImage");
+    const user = await User.findById(payload.sub).select("_id name email profileImage role");
     if (!user) return res.status(401).json({ message: "Unauthorized" });
 
-    req.user = { id: user._id.toString(), name: user.name, email: user.email, profileImage: user.profileImage };
+    req.user = { id: user._id.toString(), name: user.name, email: user.email, profileImage: user.profileImage, role: user.role };
     next();
   } catch (err) {
     return res.status(401).json({ message: "Unauthorized" });
   }
+}
+
+export function requireAdmin(req, res, next) {
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ message: "Forbidden: Admin access required" });
+  }
+  next();
 }

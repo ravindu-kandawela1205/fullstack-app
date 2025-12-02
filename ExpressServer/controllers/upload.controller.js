@@ -1,19 +1,20 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import crypto from "crypto";
+import { application } from "../config/application.js";
 
 export const getPresignedUrl = async (req, res) => {
   try {
     console.log("Presigned URL request:", req.body);
     console.log("AWS Config:", {
-      region: process.env.AWS_REGION,
-      bucket: process.env.AWS_S3_BUCKET,
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID?.substring(0, 10) + '...',
-      secretKey: process.env.AWS_SECRET_ACCESS_KEY?.substring(0, 10) + '...'
+      region: application.AWS_REGION,
+      bucket: application.AWS_S3_BUCKET,
+      accessKeyId: application.AWS_ACCESS_KEY_ID?.substring(0, 10) + '...',
+      secretKey: application.AWS_SECRET_ACCESS_KEY?.substring(0, 10) + '...'
     });
     const { fileName, fileType } = req.body;
     
-    const bucket = process.env.AWS_S3_BUCKET;
+    const bucket = application.AWS_S3_BUCKET;
     
     if (!bucket) {
       console.error("S3_BUCKET not configured");
@@ -21,10 +22,10 @@ export const getPresignedUrl = async (req, res) => {
     }
     
     const s3Client = new S3Client({
-      region: process.env.AWS_REGION,
+      region: application.AWS_REGION,
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: application.AWS_ACCESS_KEY_ID,
+        secretAccessKey: application.AWS_SECRET_ACCESS_KEY,
       },
     });
     
@@ -42,7 +43,7 @@ export const getPresignedUrl = async (req, res) => {
     
     res.json({
       uploadUrl: url,
-      fileUrl: `https://${bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`,
+      fileUrl: `https://${bucket}.s3.${application.AWS_REGION}.amazonaws.com/${key}`,
     });
   } catch (error) {
     console.error("S3 Upload Error Details:", {
